@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5efe3">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="微录 · 用日历记下和孙子、侄子的每一次通话，次数、时长一目了然。">
+  <title>微录 · 亲情通话日历</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="微录">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="stylesheet" href="./css/app.css">
+</head>
+<body>
+  <svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-calendar" viewBox="0 0 24 24">
+      <rect x="3" y="4.5" width="18" height="16" rx="3"/>
+      <path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>
+      <path d="M7.5 13.5h.01M12 13.5h.01M16.5 13.5h.01M7.5 17h.01M12 17h.01"/>
+    </symbol>
+    <symbol id="i-list" viewBox="0 0 24 24">
+      <path d="M9 6h11M9 12h11M9 18h11"/>
+      <circle cx="4.5" cy="6" r="1.2" fill="currentColor" stroke="none"/>
+      <circle cx="4.5" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+      <circle cx="4.5" cy="18" r="1.2" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24">
+      <path d="M4 20v-6M10 20V8M16 20v-9M22 20H2"/>
+    </symbol>
+    <symbol id="i-users" viewBox="0 0 24 24">
+      <circle cx="9" cy="8" r="3.2"/>
+      <path d="M3.5 20c0-3.2 2.5-5 5.5-5s5.5 1.8 5.5 5"/>
+      <path d="M16 5.5a3 3 0 0 1 0 5.8M17.5 15.2c2 .6 3.5 2.2 3.5 4.8"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24">
+      <path d="M12 5v14M5 12h14"/>
+    </symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.34 1.79.65 2.63a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.84.31 1.73.53 2.63.65A2 2 0 0 1 22 16.92Z"/>
+    </symbol>
+    <symbol id="i-arrow-out" viewBox="0 0 24 24">
+      <path d="M7 17 17 7M9 7h8v8"/>
+    </symbol>
+    <symbol id="i-arrow-in" viewBox="0 0 24 24">
+      <path d="M17 7 7 17M15 17H7V9"/>
+    </symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24">
+      <path d="M15 5l-7 7 7 7"/>
+    </symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24">
+      <path d="M9 5l7 7-7 7"/>
+    </symbol>
+    <symbol id="i-x" viewBox="0 0 24 24">
+      <path d="M6 6l12 12M18 6L6 18"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <path d="M5 13l4 4L19 7"/>
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 24 24">
+      <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 20h16"/>
+    </symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24">
+      <path d="M12 16V4m0 0 4 4m-4-4L8 8M4 20h16"/>
+    </symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24">
+      <path d="M4 7h16M10 4h4M6 7l1 13h10l1-13M10 11v5M14 11v5"/>
+    </symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24">
+      <path d="M4 20h4L18 10a2.8 2.8 0 0 0-4-4L4 16v4Z"/>
+      <path d="M13.5 6.5 17.5 10.5"/>
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="7"/>
+      <path d="M20 20l-4-4"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 7v5l3 2"/>
+    </symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24">
+      <path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9Z"/>
+    </symbol>
+    <symbol id="i-info" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 11v5M12 8h.01"/>
+    </symbol>
+    <symbol id="i-install" viewBox="0 0 24 24">
+      <rect x="6" y="2.5" width="12" height="19" rx="2.5"/>
+      <path d="M12 6.5v6m0 0 2.4-2.4M12 12.5 9.6 10.1M10 18.5h4"/>
+    </symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24">
+      <path d="M12 3l7 3v5.5c0 4.5-3 7.8-7 9.5-4-1.7-7-5-7-9.5V6l7-3Z"/>
+      <path d="M9 12l2 2 4-4"/>
+    </symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24">
+      <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+      <path d="M10 21h4"/>
+    </symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24">
+      <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/>
+    </symbol>
+  </svg>
+
+  <div class="app">
+    <header class="topbar">
+      <p class="eyebrow"><span class="pulse"></span><span id="today-line">正在加载…</span></p>
+      <div class="brand-row">
+        <h1 class="brand">微录<span>·</span><small>亲情通话日历</small></h1>
+        <button class="btn install-pill" id="install-btn" data-action="install" aria-label="安装到手机桌面" hidden>
+          <svg class="ic"><use href="#i-install"/></svg><span>安装</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="view" class="view" tabindex="-1"></main>
+
+    <nav class="tabbar" aria-label="主导航">
+      <button class="tab" data-action="tab" data-tab="calendar" aria-label="日历">
+        <svg class="ic"><use href="#i-calendar"/></svg><span>日历</span>
+      </button>
+      <button class="tab" data-action="tab" data-tab="records" aria-label="记录">
+        <svg class="ic"><use href="#i-list"/></svg><span>记录</span>
+      </button>
+      <button class="tab" data-action="tab" data-tab="stats" aria-label="统计">
+        <svg class="ic"><use href="#i-chart"/></svg><span>统计</span>
+      </button>
+      <button class="tab" data-action="tab" data-tab="family" aria-label="家人">
+        <svg class="ic"><use href="#i-users"/></svg><span>家人</span>
+      </button>
+    </nav>
+  </div>
+
+  <div id="sheet-root"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <input type="file" id="import-file" accept=".json,application/json" hidden>
+
+  <script src="./js/core.js"></script>
+  <script src="./js/seed.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>

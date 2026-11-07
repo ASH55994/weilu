@@ -1,0 +1,3786 @@
+<!--
+  微录 · 亲情通话日历（单文件版）
+  直接双击即可使用；数据保存在当前浏览器。
+  由 tools/build-single.mjs 自动生成。
+-->
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5efe3">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="微录 · 用日历记下和孙子、侄子的每一次通话，次数、时长一目了然。">
+  <title>微录 · 亲情通话日历</title>
+  <meta name="weilu-single" content="1">
+  <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABT0lEQVR42mPQjw34P5CYYdQBow4YEg5Iai7/v/vYrv826VEE1YLUgNSC9FDNAVNXzf3/+9srogwFqQGpBemh2AGuyYH/ozOC/69ePw9saHNPJZiPD4PUgNSC9ID4IDPIckBhXsj/B13RYPzuwGKwoc+X1sPFcGGQGpBakB6YGMgskhxglRCIYuiLNR3/vz06///xjFyCDgCpAakF6UEWB5lJtANAQUfIIlIxyMxRBxDtAFhWoibGlYVJdsCPt/f/X+vJ+n8yw/7/nbn1YAxig8RAcjR3wM0pJWALsWGQHM0dcKbQC6cDQHI0dwAsyLFhkBxd0sCl5ngMy0FidEkDIPz1yVWUqACxQWJ0yQUw/P7yfrgDQGy6ZUNk/Gj9VDCmejkQWpVL9YIIZCZJ1fHVm2epZjnILJLbA7Cm1bs3D8i2GKSXUFNutFU86oBRBwAAKImMgkEQZjsAAAAASUVORK5CYII=">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="微录">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <style>
+/* =========================================================
+   微录 · 亲情通话日历
+   手机优先的样式，暖纸张 + 墨绿，给长辈看的清楚设计
+   ========================================================= */
+
+:root {
+  --bg: #f5efe3;
+  --bg-deep: #ebe1d0;
+  --surface: #fffcf6;
+  --surface-2: #faf4e8;
+  --ink: #1f2a25;
+  --ink-2: #45524b;
+  --muted: #7d877f;
+  --green: #2f5d50;
+  --green-2: #3e7564;
+  --green-soft: #e4ede7;
+  --coral: #c9683f;
+  --coral-2: #e08a5b;
+  --coral-soft: #f8e5d7;
+  --gold: #b8892e;
+  --line: #e4dac9;
+  --line-2: #efe7d8;
+  --danger: #b23b3b;
+  --danger-soft: #f8e3e0;
+  --shadow-sm: 0 1px 2px rgba(47, 60, 52, 0.05);
+  --shadow: 0 1px 2px rgba(47, 60, 52, 0.04), 0 16px 36px -26px rgba(47, 60, 52, 0.45);
+  --radius: 20px;
+  --radius-sm: 14px;
+  --tab-h: 64px;
+  --font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC",
+    system-ui, -apple-system, "Segoe UI", sans-serif;
+  --num: "SF Pro Display", "DIN Alternate", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--bg-deep);
+  background-image:
+    radial-gradient(900px 500px at 8% -8%, rgba(255, 252, 246, 0.9), transparent 60%),
+    radial-gradient(700px 500px at 100% 100%, rgba(214, 195, 165, 0.35), transparent 60%);
+  min-height: 100vh;
+  min-height: 100dvh;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+body.sheet-open {
+  overflow: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1, h2, h3, p {
+  margin: 0;
+}
+
+svg.ic {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+
+.sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* ---------- 外壳 ---------- */
+
+.app {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: var(--bg);
+  padding-bottom: calc(var(--tab-h) + env(safe-area-inset-bottom) + 10px);
+}
+
+@media (min-width: 560px) {
+  .app {
+    box-shadow: 0 0 0 1px rgba(47, 60, 52, 0.07), 0 40px 110px -60px rgba(31, 42, 37, 0.55);
+  }
+}
+
+.topbar {
+  padding: calc(18px + env(safe-area-inset-top)) 20px 10px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--coral-2);
+  box-shadow: 0 0 0 3px rgba(224, 138, 91, 0.18);
+}
+
+.brand-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.brand {
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--green);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  line-height: 1.1;
+}
+
+.brand > span {
+  color: var(--coral-2);
+  font-weight: 400;
+  letter-spacing: 0;
+  transform: translateY(-2px);
+}
+
+.brand small {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+}
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+  transition: transform 0.12s ease, background 0.2s ease;
+}
+
+.icon-btn:active {
+  transform: scale(0.94);
+}
+
+.icon-btn .ic {
+  width: 20px;
+  height: 20px;
+}
+
+.icon-btn.sm {
+  width: 36px;
+  height: 36px;
+}
+
+.btn.install-pill {
+  height: 38px;
+  padding: 0 13px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--green);
+  font-size: 12.5px;
+  flex: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn.install-pill .ic {
+  width: 17px;
+  height: 17px;
+}
+
+.view {
+  padding: 4px 16px 18px;
+  outline: none;
+  animation: rise 0.35s cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- 底部导航 ---------- */
+
+.tabbar {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 460px;
+  height: calc(var(--tab-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: center;
+  background: rgba(255, 252, 246, 0.92);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  border-top: 1px solid var(--line-2);
+  z-index: 40;
+}
+
+.tab {
+  height: 100%;
+  border: 0;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #97a099;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.tab .ic {
+  width: 23px;
+  height: 23px;
+  stroke-width: 1.7;
+  transition: transform 0.2s ease;
+}
+
+.tab.is-on {
+  color: var(--green);
+}
+
+.tab.is-on .ic {
+  transform: translateY(-1px);
+}
+
+.tab.is-on::after {
+  content: "";
+  position: absolute;
+  bottom: 7px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--coral-2);
+}
+
+.tab:active .ic {
+  transform: scale(0.9);
+}
+
+/* ---------- 通用组件 ---------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 2px 14px;
+}
+
+.page-head h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.page-head p {
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 46px;
+  padding: 0 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: none;
+  font-size: 15.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn.primary {
+  background: var(--green);
+  color: #fff;
+  box-shadow: 0 10px 22px -14px rgba(47, 93, 80, 0.9);
+}
+
+.btn.coral {
+  background: var(--coral);
+  color: #fff;
+}
+
+.btn.ghost {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--ink-2);
+}
+
+.btn.soft {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.btn.danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.btn.block {
+  width: 100%;
+}
+
+.btn.sm {
+  height: 36px;
+  padding: 0 13px;
+  font-size: 13.5px;
+  border-radius: 11px;
+}
+
+.btn.lg {
+  height: 52px;
+  font-size: 16.5px;
+  border-radius: 16px;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  padding: 1px 6px;
+  vertical-align: 1px;
+  letter-spacing: 0.02em;
+}
+
+.avatar {
+  --c: var(--green);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--c);
+  background: var(--green-soft);
+  background: color-mix(in srgb, var(--c) 14%, #fff);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 18%, transparent);
+  letter-spacing: 0.02em;
+}
+
+.avatar.sm { width: 34px; height: 34px; font-size: 14px; }
+.avatar.lg { width: 50px; height: 50px; font-size: 19px; }
+
+.text-btn {
+  border: 0;
+  background: none;
+  padding: 4px;
+  font-size: 12.5px;
+  color: var(--green);
+  font-weight: 500;
+}
+
+.card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.card-head h2,
+.card-title {
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.card-head span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- 日历 ---------- */
+
+.reminder {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  border: 1px solid #eedcc2;
+  background: linear-gradient(135deg, #fdf5e6, #f8e9d3);
+  box-shadow: var(--shadow-sm);
+}
+
+.reminder-ic {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fff8ec;
+  color: var(--coral);
+  display: grid;
+  place-items: center;
+  flex: none;
+  border: 1px solid #f0dfc8;
+}
+
+.reminder-ic .ic { width: 19px; height: 19px; }
+
+.reminder-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.reminder-text strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b4a2c;
+}
+
+.reminder-text span {
+  font-size: 12px;
+  color: #957353;
+}
+
+.reminder .btn {
+  background: #fff;
+  border-color: #eedcc2;
+  color: #96603a;
+}
+
+.cal-card {
+  padding: 14px 12px 10px;
+}
+
+.cal-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 2px 8px;
+}
+
+.cal-nav {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  flex: none;
+  transition: transform 0.12s ease;
+}
+
+.cal-nav:active { transform: scale(0.92); }
+
+.cal-nav .ic { width: 17px; height: 17px; }
+
+.cal-heading {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+}
+
+.cal-heading h2 {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-heading p {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 8px 0 4px;
+  font-size: 12px;
+  color: #9aa39b;
+  font-weight: 500;
+  text-align: center;
+}
+
+.weekdays span:nth-child(6),
+.weekdays span:nth-child(7) {
+  color: #b99c86;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 3px;
+}
+
+.cell {
+  position: relative;
+  height: 50px;
+  border: 0;
+  background: none;
+  border-radius: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--ink);
+  transition: background 0.16s ease, transform 0.12s ease;
+}
+
+.cell:active { transform: scale(0.94); }
+
+.cell-num {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.cell.is-out .cell-num { color: #c5bba9; }
+
+.cell.is-future .cell-num { color: #a8a094; }
+
+.cell.is-today .cell-num {
+  box-shadow: inset 0 0 0 1.5px var(--green);
+  color: var(--green);
+  font-weight: 700;
+}
+
+.cell.is-selected {
+  background: var(--green-soft);
+}
+
+.cell.is-selected .cell-num {
+  background: var(--green);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 5px;
+}
+
+.dots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--c, var(--green));
+}
+
+.cell.is-selected .dots i {
+  box-shadow: 0 0 0 1px #fff;
+}
+
+.cal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 4px 0;
+  margin-top: 4px;
+  border-top: 1px solid var(--line-2);
+}
+
+.cal-hint {
+  font-size: 11px;
+  color: #a49b8b;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cal-hint i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--coral-2);
+}
+
+/* ---------- 当天记录 ---------- */
+
+.day-card {
+  margin-top: 12px;
+}
+
+.day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 6px;
+}
+
+.day-head h2 {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.day-head h2 span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+.day-head p {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.record {
+  width: 100%;
+  border: 0;
+  background: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 2px;
+  text-align: left;
+  border-top: 1px dashed var(--line-2);
+}
+
+.day-card .record:first-of-type {
+  border-top: 0;
+}
+
+.record:active {
+  background: var(--surface-2);
+}
+
+.record-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.record-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15.5px;
+  font-weight: 600;
+}
+
+.record-sub {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.record-sub .ic {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2;
+}
+
+.record-note {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-dur {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green);
+  font-variant-numeric: tabular-nums;
+  background: var(--green-soft);
+  border-radius: 9px;
+  padding: 5px 9px;
+  white-space: nowrap;
+}
+
+.record-dur.zero {
+  color: var(--muted);
+  background: var(--surface-2);
+}
+
+.empty {
+  text-align: center;
+  padding: 26px 14px 22px;
+}
+
+.empty.compact {
+  padding: 20px 12px 18px;
+  border-top: 1px dashed var(--line-2);
+}
+
+.empty.welcome {
+  padding: 22px 16px 20px;
+}
+
+.empty.welcome .empty-ic {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 8px;
+}
+
+.empty-ic {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--green-soft);
+  color: var(--green-2);
+}
+
+.empty-ic .ic { width: 24px; height: 24px; }
+
+.empty h3 {
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.empty p {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 4px 0 12px;
+}
+
+/* ---------- 记录页 ---------- */
+
+.search {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.search .ic {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: #9aa39b;
+}
+
+.search input {
+  width: 100%;
+  height: 46px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 0 14px 0 42px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search input::placeholder { color: #a9b0a8; }
+
+.search input:focus {
+  border-color: var(--green-2);
+  box-shadow: 0 0 0 3px rgba(62, 117, 100, 0.12);
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 12px;
+  scrollbar-width: none;
+}
+
+.chips::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex: none;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.chip:active { transform: scale(0.96); }
+
+.chip.is-on {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+
+.chip i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--c, var(--green));
+}
+
+.chip.is-on i { background: #fff; }
+
+.month-block {
+  margin-bottom: 20px;
+}
+
+.month-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 2px 4px 8px;
+}
+
+.month-head h2 {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--green);
+}
+
+.month-head span {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.day-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.day-rail {
+  width: 40px;
+  flex: none;
+  text-align: center;
+  padding-top: 10px;
+}
+
+.day-rail strong {
+  display: block;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.day-rail span {
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.day-items {
+  flex: 1;
+  min-width: 0;
+}
+
+.record-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: 15px;
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  color: inherit;
+  transition: transform 0.12s ease, border-color 0.2s ease;
+}
+
+.record-card + .record-card { margin-top: 7px; }
+
+.record-card:active {
+  transform: scale(0.99);
+  border-color: var(--line);
+}
+
+.record-card .record-dur {
+  background: transparent;
+  color: var(--green);
+  padding: 0;
+  font-size: 13.5px;
+}
+
+.record-card .record-dur.zero { color: var(--muted); }
+
+/* ---------- 统计页 ---------- */
+
+.month-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}
+
+.month-switch .cal-nav {
+  width: 36px;
+  height: 36px;
+}
+
+.month-switch > div {
+  text-align: center;
+}
+
+.month-switch strong {
+  display: block;
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.month-switch small {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.cal-nav:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin-bottom: 12px;
+}
+
+.tile {
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: 16px;
+  padding: 14px 8px 12px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.tile strong {
+  display: block;
+  font-family: var(--num);
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--green);
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.tile strong em {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 1px;
+  color: var(--green-2);
+}
+
+.tile span {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.stats-card { margin-bottom: 12px; }
+
+.trend {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 128px;
+  padding-top: 16px;
+}
+
+.trend-col {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  min-width: 0;
+}
+
+.trend-val {
+  font-size: 10.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.trend-bar {
+  width: 100%;
+  max-width: 26px;
+  height: var(--h, 0%);
+  min-height: 3px;
+  border-radius: 7px 7px 4px 4px;
+  background: linear-gradient(180deg, var(--green-2), var(--green));
+  transition: height 0.5s cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+.trend-col.is-current .trend-bar {
+  background: linear-gradient(180deg, var(--coral-2), var(--coral));
+}
+
+.trend-col.is-current .trend-label {
+  color: var(--coral);
+  font-weight: 600;
+}
+
+.trend-label {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.rank-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.rank-top {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.rank-top strong {
+  font-size: 14.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.rank-val {
+  margin-left: auto;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.rank-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  margin: 7px 0 5px;
+  overflow: hidden;
+}
+
+.rank-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--c, var(--green));
+  min-width: 3px;
+  transition: width 0.5s cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+.rank-meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ---------- 家人页 ---------- */
+
+.people {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.person-card {
+  padding: 14px;
+}
+
+.person-top {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.person-id {
+  flex: 1;
+  min-width: 0;
+}
+
+.person-id h3 {
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.02em;
+}
+
+.person-id p {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.person-last {
+  font-size: 11px;
+  color: var(--green);
+  background: var(--green-soft);
+  padding: 4px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.person-last.is-cold {
+  color: var(--coral);
+  background: var(--coral-soft);
+}
+
+.person-note {
+  font-size: 12px;
+  color: var(--ink-2);
+  margin: 10px 0 11px;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.person-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.person-actions .btn.ghost {
+  background: var(--surface);
+}
+
+.settings {
+  padding: 16px 16px 6px;
+  margin-bottom: 12px;
+}
+
+.settings .card-title {
+  margin-bottom: 4px;
+}
+
+.setting-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border: 0;
+  border-top: 1px solid var(--line-2);
+  background: none;
+  text-align: left;
+  color: inherit;
+}
+
+.setting-row:first-of-type {
+  border-top: 0;
+}
+
+.setting-row strong {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.setting-row small {
+  display: block;
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.setting-row .chev {
+  color: #b3aa9a;
+  font-size: 14px;
+}
+
+.setting-row select {
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  border-radius: 9px;
+  height: 36px;
+  padding: 0 8px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  outline: none;
+  max-width: 108px;
+}
+
+.about {
+  margin-bottom: 10px;
+}
+
+.about-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--green);
+  margin-bottom: 6px;
+}
+
+.about-brand span {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.about p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.about-tip {
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 8px 0 0;
+}
+
+.footer-note {
+  text-align: center;
+  font-size: 11px;
+  color: #a79d8d;
+  padding: 12px 0 6px;
+  letter-spacing: 0.06em;
+}
+
+/* ---------- 弹层 ---------- */
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 42, 37, 0.4);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  z-index: 60;
+  animation: fade 0.22s ease;
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sheet {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 460px;
+  max-height: 92vh;
+  max-height: 92dvh;
+  background: var(--surface);
+  border-radius: 26px 26px 0 0;
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -20px 60px -20px rgba(31, 42, 37, 0.45);
+  animation: slide-up 0.3s cubic-bezier(0.22, 0.9, 0.3, 1);
+  overflow: hidden;
+}
+
+.sheet:focus {
+  outline: none;
+}
+
+@keyframes slide-up {
+  from { transform: translate(-50%, 100%); }
+  to { transform: translate(-50%, 0); }
+}
+
+.sheet-grab {
+  width: 38px;
+  height: 4px;
+  border-radius: 999px;
+  background: #ddd2bf;
+  margin: 8px auto 0;
+  flex: none;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px 8px;
+  flex: none;
+}
+
+.sheet-head h2 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.sheet-head .icon-btn {
+  width: 34px;
+  height: 34px;
+  border-color: var(--line-2);
+  background: var(--surface-2);
+}
+
+.sheet-body {
+  padding: 6px 20px calc(18px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field > label,
+.field-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 8px;
+}
+
+.field-label .hint,
+.field > label .hint {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.field input[type="text"],
+.field input[type="tel"],
+.field input[type="date"],
+.field input[type="time"],
+.field input[type="number"],
+.field input[type="search"],
+.field select {
+  width: 100%;
+  height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0 13px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.field select {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #8b948c 50%),
+    linear-gradient(135deg, #8b948c 50%, transparent 50%);
+  background-position: calc(100% - 19px) 21px, calc(100% - 14px) 21px;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 34px;
+}
+
+.field input:focus {
+  border-color: var(--green-2);
+  box-shadow: 0 0 0 3px rgba(62, 117, 100, 0.12);
+}
+
+.field input.invalid {
+  border-color: var(--danger);
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.contact-picker {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 2px 0 6px;
+  scrollbar-width: none;
+}
+
+.contact-picker::-webkit-scrollbar { display: none; }
+
+.contact-pick {
+  flex: none;
+  width: 66px;
+  padding: 8px 2px 6px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.contact-pick.is-on {
+  background: var(--green-soft);
+  border-color: rgba(47, 93, 80, 0.18);
+  color: var(--green);
+  font-weight: 600;
+}
+
+.contact-pick .avatar {
+  width: 42px;
+  height: 42px;
+  font-size: 16px;
+}
+
+.duration-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dur-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  color: var(--ink-2);
+  flex: none;
+  transition: transform 0.12s ease;
+}
+
+.dur-btn:active { transform: scale(0.92); }
+
+.duration-box {
+  flex: 1;
+  min-width: 0;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0 10px 0 4px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.duration-box:focus-within {
+  border-color: var(--green-2);
+  box-shadow: 0 0 0 3px rgba(62, 117, 100, 0.12);
+}
+
+.field .duration-box input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  text-align: center;
+  font-family: var(--num);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--green);
+  outline: none;
+  box-shadow: none;
+  -moz-appearance: textfield;
+}
+
+.field .duration-box input:focus {
+  border: 0;
+  box-shadow: none;
+}
+
+.duration-box input::-webkit-outer-spin-button,
+.duration-box input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.duration-unit {
+  font-size: 12.5px;
+  color: var(--muted);
+  flex: none;
+  padding-bottom: 1px;
+}
+
+.quick-durs {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.quick-dur {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.quick-dur:active { background: var(--green-soft); }
+
+.dur-hint {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.seg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 13px;
+  padding: 4px;
+}
+
+.seg label {
+  position: relative;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: var(--muted);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.seg input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.seg input:checked + span {
+  color: var(--green);
+  font-weight: 600;
+}
+
+.seg label:has(input:checked) {
+  background: #fff;
+  box-shadow: 0 2px 8px -4px rgba(47, 60, 52, 0.35);
+}
+
+.seg label span {
+  pointer-events: none;
+}
+
+.color-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 2px 0;
+}
+
+.color-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: var(--c);
+  position: relative;
+  box-shadow: inset 0 0 0 2px var(--surface);
+}
+
+.color-dot input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.color-dot:has(input:checked) {
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--c);
+}
+
+.form-error {
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 13px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.sheet-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.sheet-actions.one {
+  grid-template-columns: 1fr;
+}
+
+.sheet-actions.two-even {
+  grid-template-columns: 1fr 1fr;
+}
+
+.delete-link {
+  display: block;
+  width: 100%;
+  margin: 12px 0 4px;
+  padding: 10px;
+  border: 0;
+  background: none;
+  color: var(--danger);
+  font-size: 13px;
+  text-align: center;
+}
+
+.confirm-body {
+  padding: 4px 2px 2px;
+}
+
+.confirm-text {
+  font-size: 14.5px;
+  color: var(--ink-2);
+  line-height: 1.7;
+  padding: 2px 0 10px;
+}
+
+.confirm-text strong {
+  color: var(--ink);
+}
+
+.install-list {
+  margin: 0;
+  padding: 0 0 0 18px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.9;
+}
+
+.install-list li::marker {
+  color: var(--coral);
+}
+
+.install-tip {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  line-height: 1.7;
+}
+
+/* ---------- 轻提示 ---------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--tab-h) + env(safe-area-inset-bottom) + 18px);
+  transform: translate(-50%, 12px);
+  background: #1f2a25;
+  color: #fff;
+  font-size: 13.5px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  z-index: 80;
+  max-width: 86vw;
+  text-align: center;
+}
+
+.toast.is-on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ---------- 桌面增强 ---------- */
+
+@media (hover: hover) {
+  .btn:hover { filter: brightness(1.03); }
+  .cell:hover { background: var(--surface-2); }
+  .cell.is-selected:hover { background: var(--green-soft); }
+  .record:hover { background: var(--surface-2); }
+  .record-card:hover { border-color: var(--line); }
+  .icon-btn:hover { background: var(--surface-2); }
+  .chip:hover { border-color: #d6c9b4; }
+  .setting-row:hover strong { color: var(--green); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* 很窄的屏幕 */
+@media (max-width: 360px) {
+  .reminder {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .reminder-ic {
+    display: none;
+  }
+
+  .reminder-text strong {
+    font-size: 13.5px;
+  }
+
+  .reminder .btn {
+    padding: 0 11px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 350px) {
+  .brand { font-size: 24px; }
+  .brand small { display: none; }
+  .cell { height: 46px; }
+  .view { padding-left: 12px; padding-right: 12px; }
+  .tab { font-size: 10.5px; }
+}
+
+  </style>
+</head>
+<body>
+  <svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-calendar" viewBox="0 0 24 24">
+      <rect x="3" y="4.5" width="18" height="16" rx="3"/>
+      <path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>
+      <path d="M7.5 13.5h.01M12 13.5h.01M16.5 13.5h.01M7.5 17h.01M12 17h.01"/>
+    </symbol>
+    <symbol id="i-list" viewBox="0 0 24 24">
+      <path d="M9 6h11M9 12h11M9 18h11"/>
+      <circle cx="4.5" cy="6" r="1.2" fill="currentColor" stroke="none"/>
+      <circle cx="4.5" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+      <circle cx="4.5" cy="18" r="1.2" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24">
+      <path d="M4 20v-6M10 20V8M16 20v-9M22 20H2"/>
+    </symbol>
+    <symbol id="i-users" viewBox="0 0 24 24">
+      <circle cx="9" cy="8" r="3.2"/>
+      <path d="M3.5 20c0-3.2 2.5-5 5.5-5s5.5 1.8 5.5 5"/>
+      <path d="M16 5.5a3 3 0 0 1 0 5.8M17.5 15.2c2 .6 3.5 2.2 3.5 4.8"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24">
+      <path d="M12 5v14M5 12h14"/>
+    </symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.34 1.79.65 2.63a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.84.31 1.73.53 2.63.65A2 2 0 0 1 22 16.92Z"/>
+    </symbol>
+    <symbol id="i-arrow-out" viewBox="0 0 24 24">
+      <path d="M7 17 17 7M9 7h8v8"/>
+    </symbol>
+    <symbol id="i-arrow-in" viewBox="0 0 24 24">
+      <path d="M17 7 7 17M15 17H7V9"/>
+    </symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24">
+      <path d="M15 5l-7 7 7 7"/>
+    </symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24">
+      <path d="M9 5l7 7-7 7"/>
+    </symbol>
+    <symbol id="i-x" viewBox="0 0 24 24">
+      <path d="M6 6l12 12M18 6L6 18"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <path d="M5 13l4 4L19 7"/>
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 24 24">
+      <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 20h16"/>
+    </symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24">
+      <path d="M12 16V4m0 0 4 4m-4-4L8 8M4 20h16"/>
+    </symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24">
+      <path d="M4 7h16M10 4h4M6 7l1 13h10l1-13M10 11v5M14 11v5"/>
+    </symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24">
+      <path d="M4 20h4L18 10a2.8 2.8 0 0 0-4-4L4 16v4Z"/>
+      <path d="M13.5 6.5 17.5 10.5"/>
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="7"/>
+      <path d="M20 20l-4-4"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 7v5l3 2"/>
+    </symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24">
+      <path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9Z"/>
+    </symbol>
+    <symbol id="i-info" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 11v5M12 8h.01"/>
+    </symbol>
+    <symbol id="i-install" viewBox="0 0 24 24">
+      <rect x="6" y="2.5" width="12" height="19" rx="2.5"/>
+      <path d="M12 6.5v6m0 0 2.4-2.4M12 12.5 9.6 10.1M10 18.5h4"/>
+    </symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24">
+      <path d="M12 3l7 3v5.5c0 4.5-3 7.8-7 9.5-4-1.7-7-5-7-9.5V6l7-3Z"/>
+      <path d="M9 12l2 2 4-4"/>
+    </symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24">
+      <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+      <path d="M10 21h4"/>
+    </symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24">
+      <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/>
+    </symbol>
+  </svg>
+
+  <div class="app">
+    <header class="topbar">
+      <p class="eyebrow"><span class="pulse"></span><span id="today-line">正在加载…</span></p>
+      <div class="brand-row">
+        <h1 class="brand">微录<span>·</span><small>亲情通话日历</small></h1>
+        <button class="btn install-pill" id="install-btn" data-action="install" aria-label="安装到手机桌面" hidden>
+          <svg class="ic"><use href="#i-install"/></svg><span>安装</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="view" class="view" tabindex="-1"></main>
+
+    <nav class="tabbar" aria-label="主导航">
+      <button class="tab" data-action="tab" data-tab="calendar" aria-label="日历">
+        <svg class="ic"><use href="#i-calendar"/></svg><span>日历</span>
+      </button>
+      <button class="tab" data-action="tab" data-tab="records" aria-label="记录">
+        <svg class="ic"><use href="#i-list"/></svg><span>记录</span>
+      </button>
+      <button class="tab" data-action="tab" data-tab="stats" aria-label="统计">
+        <svg class="ic"><use href="#i-chart"/></svg><span>统计</span>
+      </button>
+      <button class="tab" data-action="tab" data-tab="family" aria-label="家人">
+        <svg class="ic"><use href="#i-users"/></svg><span>家人</span>
+      </button>
+    </nav>
+  </div>
+
+  <div id="sheet-root"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <input type="file" id="import-file" accept=".json,application/json" hidden>
+
+  <script>
+/*
+ * 微录 · 核心逻辑
+ * 纯函数，无 DOM 依赖，可在浏览器（window.WeiLuCore）和 Node（require）中运行。
+ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) {
+    module.exports = factory();
+  } else {
+    root.WeiLuCore = factory();
+  }
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  var RELATIONS = ['孙子', '孙女', '外孙', '外孙女', '侄子', '侄女', '儿子', '女儿', '其他'];
+  var DIRECTIONS = [
+    { id: 'out', label: '我打过去', short: '呼出' },
+    { id: 'in', label: '打给我', short: '呼入' }
+  ];
+  var COLORS = ['#2F5D50', '#C96F4A', '#3F6E8A', '#8A5A9E', '#A8763E', '#B0536A', '#5B7F5E', '#6B7280'];
+  var WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
+  var REMINDER_OPTIONS = [0, 5, 7, 10, 14, 30];
+
+  function pad2(n) {
+    return (n < 10 ? '0' : '') + n;
+  }
+
+  function clampDuration(value) {
+    var n = Number(value);
+    if (!isFinite(n)) return 0;
+    n = Math.round(n);
+    if (n < 0) return 0;
+    if (n > 1440) return 1440;
+    return n;
+  }
+
+  /* ---------- 日期 ---------- */
+
+  function dateKey(date) {
+    return date.getFullYear() + '-' + pad2(date.getMonth() + 1) + '-' + pad2(date.getDate());
+  }
+
+  function parseDateKey(key) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(key || ''));
+    if (!m) return null;
+    var y = +m[1], mo = +m[2], d = +m[3];
+    if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+    var date = new Date(y, mo - 1, d);
+    if (date.getFullYear() !== y || date.getMonth() !== mo - 1 || date.getDate() !== d) return null;
+    return date;
+  }
+
+  function isValidDateKey(key) {
+    return !!parseDateKey(key) && dateKey(parseDateKey(key)) === key;
+  }
+
+  function todayKey(now) {
+    return dateKey(now instanceof Date ? now : new Date());
+  }
+
+  function addDays(date, days) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+  }
+
+  function daysBetween(fromKey, toKey) {
+    var a = parseDateKey(fromKey);
+    var b = parseDateKey(toKey);
+    if (!a || !b) return null;
+    var utcA = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+    var utcB = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+    return Math.round((utcB - utcA) / 86400000);
+  }
+
+  function monthKeyOf(key) {
+    return String(key || '').slice(0, 7);
+  }
+
+  function monthKeyOfDate(date) {
+    return date.getFullYear() + '-' + pad2(date.getMonth() + 1);
+  }
+
+  function isValidMonthKey(key) {
+    return /^\d{4}-(0[1-9]|1[0-2])$/.test(String(key || ''));
+  }
+
+  function shiftMonth(monthKey, delta) {
+    if (!isValidMonthKey(monthKey)) return monthKey;
+    var y = +monthKey.slice(0, 4);
+    var m = +monthKey.slice(5, 7) - 1 + Number(delta || 0);
+    var d = new Date(y, m, 1);
+    return monthKeyOfDate(d);
+  }
+
+  function monthLabel(monthKey) {
+    if (!isValidMonthKey(monthKey)) return '';
+    return (+monthKey.slice(0, 4)) + '年' + (+monthKey.slice(5, 7)) + '月';
+  }
+
+  function formatDayCN(key, opts) {
+    var d = parseDateKey(key);
+    if (!d) return '';
+    var base = (d.getMonth() + 1) + '月' + d.getDate() + '日 周' + WEEKDAYS[d.getDay()];
+    return opts && opts.year ? d.getFullYear() + '年' + base : base;
+  }
+
+  /* 月视图网格（周一为一周起点；默认固定 6 行，compact 时按需 5/6 行） */
+  function monthGrid(year, monthIndex, opts) {
+    var first = new Date(year, monthIndex, 1);
+    var offset = (first.getDay() + 6) % 7;
+    var daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+    var rows = opts && opts.compact ? Math.ceil((offset + daysInMonth) / 7) : 6;
+    var start = addDays(first, -offset);
+    var cells = [];
+    for (var i = 0; i < rows * 7; i++) {
+      var d = addDays(start, i);
+      cells.push({
+        key: dateKey(d),
+        day: d.getDate(),
+        month: d.getMonth(),
+        inMonth: d.getMonth() === monthIndex && d.getFullYear() === year
+      });
+    }
+    return cells;
+  }
+
+  /* ---------- 文案 ---------- */
+
+  function durationText(minutes) {
+    var m = clampDuration(minutes);
+    if (m < 60) return m + ' 分钟';
+    var h = Math.floor(m / 60);
+    var rest = m % 60;
+    return rest ? h + ' 小时 ' + rest + ' 分' : h + ' 小时';
+  }
+
+  function relativeDays(days) {
+    if (days === null || days === undefined || !isFinite(days)) return '还没有通话';
+    if (days <= 0) return '今天';
+    if (days === 1) return '昨天';
+    return days + ' 天前';
+  }
+
+  function directionLabel(id) {
+    for (var i = 0; i < DIRECTIONS.length; i++) {
+      if (DIRECTIONS[i].id === id) return DIRECTIONS[i].label;
+    }
+    return DIRECTIONS[0].label;
+  }
+
+  /* ---------- 数据 ---------- */
+
+  function uid(prefix) {
+    return (prefix || 'id') + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function makeEmptyData() {
+    return {
+      version: 1,
+      contacts: [],
+      calls: [],
+      settings: { reminderDays: 10 },
+      updatedAt: null
+    };
+  }
+
+  function validateContact(raw) {
+    raw = raw || {};
+    var errors = {};
+    var name = String(raw.name == null ? '' : raw.name).trim().replace(/\s+/g, ' ');
+    if (!name) errors.name = '请填写家人的称呼';
+    else if (name.length > 12) errors.name = '称呼最多 12 个字';
+    var relation = RELATIONS.indexOf(raw.relation) >= 0 ? raw.relation : '其他';
+    var phone = String(raw.phone == null ? '' : raw.phone).trim().slice(0, 20);
+    if (phone && !/^[0-9+\-() ]{3,20}$/.test(phone)) errors.phone = '电话号码格式不太对';
+    var color = /^#[0-9a-fA-F]{6}$/.test(raw.color || '') ? raw.color : COLORS[0];
+    return {
+      ok: Object.keys(errors).length === 0,
+      errors: errors,
+      value: { name: name, relation: relation, phone: phone, color: color }
+    };
+  }
+
+  function validateCall(raw, contacts) {
+    raw = raw || {};
+    var errors = {};
+    var list = contacts || [];
+    var contactId = raw.contactId;
+    var exists = list.some(function (c) { return c && c.id === contactId; });
+    if (!exists) errors.contactId = '请选择是和哪位家人通话';
+    if (!isValidDateKey(raw.date)) errors.date = '请选择日期';
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(raw.time || ''))) errors.time = '请选择时间';
+    var duration = Number(raw.duration);
+    if (!isFinite(duration) || duration < 0 || duration > 1440) {
+      errors.duration = '通话时长需在 0 到 1440 分钟之间';
+    }
+    var direction = raw.direction === 'in' ? 'in' : 'out';
+    var note = String(raw.note == null ? '' : raw.note).trim().slice(0, 60);
+    return {
+      ok: Object.keys(errors).length === 0,
+      errors: errors,
+      value: {
+        contactId: contactId,
+        date: raw.date,
+        time: raw.time,
+        duration: clampDuration(duration),
+        direction: direction,
+        note: note
+      }
+    };
+  }
+
+  function normalizeData(raw) {
+    var out = makeEmptyData();
+    if (!raw || typeof raw !== 'object') return out;
+    var seenContacts = Object.create(null);
+    var contacts = Array.isArray(raw.contacts) ? raw.contacts.slice(0, 200) : [];
+    contacts.forEach(function (c) {
+      if (!c || typeof c !== 'object') return;
+      var v = validateContact(c);
+      if (!v.ok) return;
+      var id = typeof c.id === 'string' && c.id && c.id.length <= 64 && !seenContacts[c.id]
+        ? c.id
+        : uid('p');
+      seenContacts[id] = true;
+      out.contacts.push({
+        id: id,
+        name: v.value.name,
+        relation: v.value.relation,
+        phone: v.value.phone,
+        color: v.value.color,
+        createdAt: typeof c.createdAt === 'string' ? c.createdAt : null
+      });
+    });
+
+    var seenCalls = Object.create(null);
+    var calls = Array.isArray(raw.calls) ? raw.calls.slice(0, 20000) : [];
+    calls.forEach(function (c) {
+      if (!c || typeof c !== 'object') return;
+      if (!seenContacts[c.contactId]) return;
+      var v = validateCall(c, out.contacts);
+      if (!v.ok) return;
+      var id = typeof c.id === 'string' && c.id && c.id.length <= 64 && !seenCalls[c.id]
+        ? c.id
+        : uid('c');
+      seenCalls[id] = true;
+      out.calls.push({
+        id: id,
+        contactId: v.value.contactId,
+        date: v.value.date,
+        time: v.value.time,
+        duration: v.value.duration,
+        direction: v.value.direction,
+        note: v.value.note,
+        createdAt: typeof c.createdAt === 'string' ? c.createdAt : null
+      });
+    });
+    out.calls.sort(compareCallsDesc);
+
+    var settings = raw.settings && typeof raw.settings === 'object' ? raw.settings : {};
+    var days = Number(settings.reminderDays);
+    out.settings.reminderDays = REMINDER_OPTIONS.indexOf(days) >= 0 ? days : 10;
+    out.updatedAt = typeof raw.updatedAt === 'string' ? raw.updatedAt : null;
+    return out;
+  }
+
+  function compareCallsDesc(a, b) {
+    if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+    if (a.time !== b.time) return a.time < b.time ? 1 : -1;
+    return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
+  }
+
+  /* ---------- 统计 ---------- */
+
+  function summarize(opts) {
+    opts = opts || {};
+    var today = isValidDateKey(opts.today) ? opts.today : todayKey();
+    var monthKey = isValidMonthKey(opts.monthKey) ? opts.monthKey : monthKeyOf(today);
+    var reminderDays = Number(opts.reminderDays);
+    if (!isFinite(reminderDays)) reminderDays = 10;
+    var trendMonths = opts.trendMonths || 6;
+
+    var contacts = (Array.isArray(opts.contacts) ? opts.contacts : []).filter(function (c) {
+      return c && c.id;
+    });
+    var byId = Object.create(null);
+    var people = contacts.map(function (c) {
+      byId[c.id] = c;
+      return {
+        id: c.id,
+        name: c.name,
+        relation: c.relation,
+        color: c.color,
+        phone: c.phone || '',
+        totalCalls: 0,
+        totalMinutes: 0,
+        monthCalls: 0,
+        monthMinutes: 0,
+        lastKey: null,
+        lastTime: null,
+        lastDuration: 0
+      };
+    });
+    var peopleById = Object.create(null);
+    people.forEach(function (p) { peopleById[p.id] = p; });
+
+    var calls = (Array.isArray(opts.calls) ? opts.calls : []).filter(function (c) {
+      return c && byId[c.contactId] && isValidDateKey(c.date) && /^([01]\d|2[0-3]):[0-5]\d$/.test(String(c.time || ''));
+    });
+
+    var byDay = Object.create(null);
+    var months = Object.create(null);
+    var monthCalls = 0;
+    var monthMinutes = 0;
+    var monthDays = Object.create(null);
+    var monthContactIds = Object.create(null);
+    var totalCalls = 0;
+    var totalMinutes = 0;
+
+    calls.forEach(function (c) {
+      var duration = clampDuration(c.duration);
+      var p = peopleById[c.contactId];
+      var ym = monthKeyOf(c.date);
+      p.totalCalls += 1;
+      p.totalMinutes += duration;
+      if (!p.lastKey || c.date > p.lastKey || (c.date === p.lastKey && c.time > (p.lastTime || ''))) {
+        p.lastKey = c.date;
+        p.lastTime = c.time;
+        p.lastDuration = duration;
+      }
+      totalCalls += 1;
+      totalMinutes += duration;
+
+      var day = byDay[c.date] || (byDay[c.date] = { count: 0, minutes: 0, contactIds: [] });
+      day.count += 1;
+      day.minutes += duration;
+      if (day.contactIds.indexOf(c.contactId) < 0) day.contactIds.push(c.contactId);
+
+      var mm = months[ym] || (months[ym] = { calls: 0, minutes: 0 });
+      mm.calls += 1;
+      mm.minutes += duration;
+
+      if (ym === monthKey) {
+        monthCalls += 1;
+        monthMinutes += duration;
+        monthDays[c.date] = true;
+        monthContactIds[c.contactId] = true;
+        p.monthCalls += 1;
+        p.monthMinutes += duration;
+      }
+    });
+
+    people.forEach(function (p) {
+      p.daysSince = p.lastKey ? daysBetween(p.lastKey, today) : null;
+      p.avgMinutes = p.totalCalls ? Math.round(p.totalMinutes / p.totalCalls) : 0;
+    });
+    people.sort(function (a, b) {
+      return (b.monthCalls - a.monthCalls) ||
+        (b.totalCalls - a.totalCalls) ||
+        String(a.name).localeCompare(String(b.name), 'zh-Hans-CN');
+    });
+
+    var trend = [];
+    for (var i = trendMonths - 1; i >= 0; i--) {
+      var ym2 = shiftMonth(monthKey, -i);
+      var m2 = months[ym2] || { calls: 0, minutes: 0 };
+      trend.push({
+        monthKey: ym2,
+        label: (+ym2.slice(5, 7)) + '月',
+        calls: m2.calls,
+        minutes: m2.minutes
+      });
+    }
+
+    var reminders = people.filter(function (p) {
+      return p.lastKey && p.daysSince !== null && p.daysSince >= reminderDays && reminderDays > 0;
+    }).sort(function (a, b) { return b.daysSince - a.daysSince; });
+
+    return {
+      today: today,
+      monthKey: monthKey,
+      monthLabel: monthLabel(monthKey),
+      totals: {
+        calls: monthCalls,
+        minutes: monthMinutes,
+        activeDays: Object.keys(monthDays).length,
+        contacts: Object.keys(monthContactIds).length
+      },
+      overall: {
+        calls: totalCalls,
+        minutes: totalMinutes,
+        contacts: people.length
+      },
+      people: people,
+      byDay: byDay,
+      trend: trend,
+      reminders: reminders,
+      reminderDays: reminderDays
+    };
+  }
+
+  return {
+    RELATIONS: RELATIONS,
+    DIRECTIONS: DIRECTIONS,
+    COLORS: COLORS,
+    WEEKDAYS: WEEKDAYS,
+    REMINDER_OPTIONS: REMINDER_OPTIONS,
+    pad2: pad2,
+    clampDuration: clampDuration,
+    dateKey: dateKey,
+    parseDateKey: parseDateKey,
+    isValidDateKey: isValidDateKey,
+    todayKey: todayKey,
+    addDays: addDays,
+    daysBetween: daysBetween,
+    monthKeyOf: monthKeyOf,
+    monthKeyOfDate: monthKeyOfDate,
+    shiftMonth: shiftMonth,
+    monthLabel: monthLabel,
+    formatDayCN: formatDayCN,
+    monthGrid: monthGrid,
+    durationText: durationText,
+    relativeDays: relativeDays,
+    directionLabel: directionLabel,
+    uid: uid,
+    makeEmptyData: makeEmptyData,
+    validateContact: validateContact,
+    validateCall: validateCall,
+    normalizeData: normalizeData,
+    compareCallsDesc: compareCallsDesc,
+    summarize: summarize
+  };
+});
+
+  </script>
+  <script>
+/*
+ * 微录 · 示例数据（仅在 ?demo=1 或用户主动载入时使用）
+ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) {
+    module.exports = factory(require('./core.js'));
+  } else {
+    root.WeiLuSeed = factory(root.WeiLuCore);
+  }
+})(typeof self !== 'undefined' ? self : this, function (C) {
+  'use strict';
+
+  var CONTACTS = [
+    { id: 'p_demo_bao', name: '小宝', relation: '孙子', phone: '138 0013 8000', color: '#2F5D50' },
+    { id: 'p_demo_duo', name: '朵朵', relation: '孙女', phone: '139 0013 9000', color: '#C96F4A' },
+    { id: 'p_demo_qiang', name: '志强', relation: '侄子', phone: '137 0013 7000', color: '#3F6E8A' },
+    { id: 'p_demo_yuan', name: '圆圆', relation: '侄女', phone: '', color: '#8A5A9E' }
+  ];
+
+  var PLANS = [
+    {
+      id: 'p_demo_bao', start: 0, every: [6, 9], duration: [14, 42], morningChance: 0.35,
+      notes: ['说幼儿园得了小红花', '问我今天吃了什么', '让我看他新学的字', '说想爷爷奶奶了', '提醒我天冷加衣', '背了新学的古诗']
+    },
+    {
+      id: 'p_demo_duo', start: 1, every: [9, 14], duration: [8, 30], morningChance: 0.2,
+      notes: ['视频里给我跳舞', '说考试考了 98 分', '缠着要听故事', '说妈妈买了新书包', '画了一幅画要给我看']
+    },
+    {
+      id: 'p_demo_qiang', start: 19, every: [18, 26], duration: [6, 24], morningChance: 0,
+      notes: ['问了问工作顺不顺', '说周末回来吃饭', '聊了聊家里的事', '说给我寄了点茶叶']
+    },
+    {
+      id: 'p_demo_yuan', start: 6, every: [20, 30], duration: [5, 18], morningChance: 0,
+      notes: ['说学校运动会拿了名次', '问我身体怎么样', '聊了会儿家常']
+    }
+  ];
+
+  function mulberry32(seed) {
+    var a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      var t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function build(todayKey) {
+    var today = C.parseDateKey(todayKey || C.todayKey());
+    var rnd = mulberry32(20261029);
+    var calls = [];
+    var seq = 0;
+
+    function record(contactId, dayOffset, opts) {
+      opts = opts || {};
+      var date = C.addDays(today, -dayOffset);
+      var hour, minute;
+      if (opts.time) {
+        hour = +opts.time.slice(0, 2);
+        minute = +opts.time.slice(3, 5);
+      } else {
+        var morning = rnd() < (opts.morningChance || 0);
+        hour = morning ? 8 + Math.floor(rnd() * 3) : 18 + Math.floor(rnd() * 3);
+        minute = Math.floor(rnd() * 60);
+      }
+      var duration = Math.round(opts.duration || 10);
+      calls.push({
+        id: 'c_demo_' + (++seq),
+        contactId: contactId,
+        date: C.dateKey(date),
+        time: C.pad2(hour) + ':' + C.pad2(minute),
+        duration: duration,
+        direction: rnd() < 0.68 ? 'out' : 'in',
+        note: opts.note !== undefined ? opts.note : null,
+        createdAt: C.dateKey(date) + 'T' + C.pad2(hour) + ':' + C.pad2(minute) + ':00'
+      });
+    }
+
+    PLANS.forEach(function (plan) {
+      var offset = plan.start;
+      var guard = 0;
+      while (offset <= 200 && guard++ < 60) {
+        var duration = Math.round(plan.duration[0] + rnd() * (plan.duration[1] - plan.duration[0]));
+        var note = rnd() < 0.42 ? plan.notes[Math.floor(rnd() * plan.notes.length)] : null;
+        var fixed = offset === 0 ? '08:40' : null;
+        record(plan.id, offset, {
+          duration: offset === 0 ? 12 : duration,
+          morningChance: plan.morningChance,
+          note: offset === 0 ? '问我吃早饭了没有' : note,
+          time: fixed
+        });
+        var span = plan.every[0] + rnd() * (plan.every[1] - plan.every[0]);
+        offset += Math.max(3, Math.round(span));
+      }
+    });
+
+    calls.sort(C.compareCallsDesc);
+
+    return {
+      version: 1,
+      contacts: CONTACTS.map(function (c) {
+        return { id: c.id, name: c.name, relation: c.relation, phone: c.phone, color: c.color, createdAt: null };
+      }),
+      calls: calls,
+      settings: { reminderDays: 10 },
+      updatedAt: null
+    };
+  }
+
+  return { build: build, CONTACTS: CONTACTS };
+});
+
+  </script>
+  <script>
+/*
+ * 微录 · 界面逻辑
+ * 原生 JS，无框架；数据保存在 localStorage。
+ */
+(function () {
+  'use strict';
+
+  var C = window.WeiLuCore;
+  var STORAGE_KEY = 'weilu.data.v1';
+  var isSingleFile = !!document.querySelector('meta[name="weilu-single"]');
+  var nativeAndroid = !!(window.WeiluAndroid && typeof window.WeiluAndroid.saveBackup === 'function');
+  var view = document.getElementById('view');
+  var sheetRoot = document.getElementById('sheet-root');
+  var importInput = document.getElementById('import-file');
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+
+  var today = C.todayKey();
+  var state = {
+    data: loadData(),
+    tab: 'calendar',
+    calYear: C.parseDateKey(today).getFullYear(),
+    calMonth: C.parseDateKey(today).getMonth(),
+    selected: today,
+    filter: 'all',
+    query: '',
+    statsMonth: C.monthKeyOf(today),
+    pendingConfirm: null,
+    contactAfterSave: null,
+    lastTrigger: null
+  };
+
+  /* ---------------- 启动 ---------------- */
+
+  (function boot() {
+    try {
+      var params = new URLSearchParams(location.search);
+      if (params.get('demo') === '1' && !state.data.contacts.length && !state.data.calls.length && window.WeiLuSeed) {
+        state.data = C.normalizeData(window.WeiLuSeed.build(today));
+        saveData();
+      }
+    } catch (e) { /* 忽略 */ }
+
+    var hash = (location.hash || '').replace(/^#/, '');
+    if (['calendar', 'records', 'stats', 'family'].indexOf(hash) >= 0) state.tab = hash;
+
+    renderAll();
+    registerServiceWorker();
+  })();
+
+  /* ---------------- 数据存取 ---------------- */
+
+  function loadData() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return C.normalizeData(JSON.parse(raw));
+    } catch (e) {
+      console.warn('读取本地数据失败', e);
+    }
+    return C.makeEmptyData();
+  }
+
+  function saveData() {
+    state.data.updatedAt = new Date().toISOString();
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+      return true;
+    } catch (e) {
+      toast('保存失败：浏览器存储不可用或空间不足');
+      return false;
+    }
+  }
+
+  function registerServiceWorker() {
+    if (nativeAndroid) return;
+    if (!('serviceWorker' in navigator)) return;
+    if (location.protocol !== 'http:' && location.protocol !== 'https:') return;
+    navigator.serviceWorker.register('./sw.js').catch(function () { /* 离线缓存不可用不影响使用 */ });
+  }
+
+  /* ---------------- 小工具 ---------------- */
+
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+
+  function svg(name) {
+    return '<svg class="ic" aria-hidden="true"><use href="#i-' + name + '"/></svg>';
+  }
+
+  function pad(n) {
+    return C.pad2(n);
+  }
+
+  function contactById(id) {
+    for (var i = 0; i < state.data.contacts.length; i++) {
+      if (state.data.contacts[i].id === id) return state.data.contacts[i];
+    }
+    return null;
+  }
+
+  function colorOf(id) {
+    var p = contactById(id);
+    return p ? p.color : '#2F5D50';
+  }
+
+  function avatarText(name) {
+    var n = String(name || '').trim();
+    if (!n) return '?';
+    if (/[\u4e00-\u9fa5]/.test(n)) return n.slice(-1);
+    return n.slice(0, 1).toUpperCase();
+  }
+
+  function nowTime() {
+    var d = new Date();
+    return pad(d.getHours()) + ':' + pad(Math.floor(d.getMinutes() / 5) * 5);
+  }
+
+  function summaryFor(monthKey) {
+    return C.summarize({
+      contacts: state.data.contacts,
+      calls: state.data.calls,
+      today: C.todayKey(),
+      monthKey: monthKey,
+      reminderDays: state.data.settings.reminderDays,
+      trendMonths: 6
+    });
+  }
+
+  function toast(message) {
+    if (!toastEl) return;
+    toastEl.textContent = message;
+    toastEl.classList.add('is-on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      toastEl.classList.remove('is-on');
+    }, 2400);
+  }
+
+  function setTab(tab) {
+    if (!tab || state.tab === tab) return;
+    state.tab = tab;
+    renderChrome();
+    renderView();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    try {
+      history.replaceState(null, '', '#' + tab);
+    } catch (e) { /* file:// 下可能受限 */ }
+  }
+
+  /* ---------------- 渲染入口 ---------------- */
+
+  function renderAll() {
+    renderChrome();
+    renderView();
+  }
+
+  function renderChrome() {
+    var dateLine = document.getElementById('today-line');
+    if (dateLine) dateLine.textContent = C.formatDayCN(C.todayKey(), { year: true });
+    var tabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+      var on = tabs[i].getAttribute('data-tab') === state.tab;
+      tabs[i].classList.toggle('is-on', on);
+      if (on) tabs[i].setAttribute('aria-current', 'page');
+      else tabs[i].removeAttribute('aria-current');
+    }
+    updateInstallUi();
+  }
+
+  function renderView() {
+    if (state.tab === 'records') view.innerHTML = recordsView();
+    else if (state.tab === 'stats') view.innerHTML = statsView();
+    else if (state.tab === 'family') view.innerHTML = familyView();
+    else view.innerHTML = calendarView();
+  }
+
+  /* ---------------- 日历页 ---------------- */
+
+  function calendarView() {
+    var monthKey = state.calYear + '-' + pad(state.calMonth + 1);
+    var s = summaryFor(monthKey);
+    var overall = summaryFor(C.monthKeyOf(C.todayKey()));
+    var cells = C.monthGrid(state.calYear, state.calMonth, { compact: true });
+    var dayCalls = state.data.calls.filter(function (c) { return c.date === state.selected; })
+      .sort(function (a, b) { return a.time < b.time ? -1 : a.time > b.time ? 1 : 0; });
+    var dayInfo = s.byDay[state.selected] || { count: 0, minutes: 0 };
+    var reminder = overall.reminders[0];
+    var hasContacts = state.data.contacts.length > 0;
+
+    var html = '';
+
+    if (reminder) {
+      html += '<div class="reminder">' +
+        '<div class="reminder-ic">' + svg('bell') + '</div>' +
+        '<div class="reminder-text"><strong>该给' + esc(reminder.name) + '打个电话了</strong>' +
+        '<span>已经 ' + reminder.daysSince + ' 天没有通话' +
+        (overall.reminders.length > 1 ? ' · 还有 ' + (overall.reminders.length - 1) + ' 位家人' : '') + '</span></div>' +
+        '<button class="btn sm" data-action="new-call" data-contact="' + esc(reminder.id) + '">现在记录</button>' +
+        '</div>';
+    }
+
+    if (!hasContacts) {
+      html += '<section class="card empty welcome" style="margin-bottom:12px">' +
+        '<div class="empty-ic">' + svg('users') + '</div>' +
+        '<h3>欢迎使用微录</h3>' +
+        '<p>先添加孙子、侄子，再记下每一次通话</p>' +
+        '<button class="btn primary" data-action="new-contact">＋ 添加第一位家人</button>' +
+        '</section>';
+    }
+
+    html += '<section class="card cal-card">' +
+      '<div class="cal-head">' +
+        '<button class="cal-nav" data-action="cal-prev" aria-label="上个月">' + svg('chevron-left') + '</button>' +
+        '<div class="cal-heading"><h2>' + C.monthLabel(monthKey) + '</h2>' +
+          '<p>' + (s.totals.calls ? '共 ' + s.totals.calls + ' 次 · ' + C.durationText(s.totals.minutes) : '这个月还没有通话') + '</p>' +
+        '</div>' +
+        '<button class="cal-nav" data-action="cal-next" aria-label="下个月">' + svg('chevron-right') + '</button>' +
+      '</div>' +
+      '<div class="weekdays">' +
+        ['一', '二', '三', '四', '五', '六', '日'].map(function (w) { return '<span>' + w + '</span>'; }).join('') +
+      '</div>' +
+      '<div class="cal-grid">' + cells.map(function (cell) { return calendarCell(cell, s); }).join('') + '</div>' +
+      '<div class="cal-foot"><span class="cal-hint"><i></i>圆点代表当天有通话</span>' +
+        '<button class="text-btn" data-action="cal-today">回到今天</button></div>' +
+    '</section>';
+
+    html += dayCard(dayCalls, dayInfo, s.today);
+    return html;
+  }
+
+  function calendarCell(cell, s) {
+    var classes = ['cell'];
+    if (!cell.inMonth) classes.push('is-out');
+    if (cell.key > s.today) classes.push('is-future');
+    if (cell.key === s.today) classes.push('is-today');
+    if (cell.key === state.selected) classes.push('is-selected');
+    var info = s.byDay[cell.key];
+    var dots = '';
+    if (info) {
+      dots = info.contactIds.slice(0, 3).map(function (id) {
+        return '<i style="--c:' + colorOf(id) + '"></i>';
+      }).join('');
+    }
+    var label = C.formatDayCN(cell.key) + (info ? '，' + info.count + ' 次通话' : '');
+    return '<button class="' + classes.join(' ') + '" data-action="pick-day" data-key="' + cell.key + '" aria-label="' + esc(label) + '">' +
+      '<span class="cell-num">' + cell.day + '</span>' +
+      '<span class="dots" aria-hidden="true">' + dots + '</span>' +
+    '</button>';
+  }
+
+  function dayCard(dayCalls, dayInfo, todayKey) {
+    var date = C.parseDateKey(state.selected);
+    var title = (date.getMonth() + 1) + '月' + date.getDate() + '日';
+    var weekday = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()];
+    var isToday = state.selected === todayKey;
+
+    var list = dayCalls.map(function (call) {
+      var p = contactById(call.contactId);
+      if (!p) return '';
+      var dir = call.direction === 'in' ? 'arrow-in' : 'arrow-out';
+      return '<button class="record" data-action="open-call" data-id="' + esc(call.id) + '">' +
+        '<span class="avatar" style="--c:' + p.color + '">' + esc(avatarText(p.name)) + '</span>' +
+        '<span class="record-main">' +
+          '<span class="record-title">' + esc(p.name) + '<span class="tag">' + esc(p.relation) + '</span></span>' +
+          '<span class="record-sub">' + esc(call.time) + ' · ' + svg(dir) + esc(C.directionLabel(call.direction)) + '</span>' +
+          (call.note ? '<span class="record-note">' + esc(call.note) + '</span>' : '') +
+        '</span>' +
+        '<span class="record-dur' + (call.duration === 0 ? ' zero' : '') + '">' + C.durationText(call.duration) + '</span>' +
+      '</button>';
+    }).join('');
+
+    return '<section class="card day-card">' +
+      '<div class="day-head">' +
+        '<div><h2>' + title + (isToday ? '<span>今天</span>' : '<span>' + weekday + '</span>') + '</h2>' +
+          '<p>' + (dayInfo.count ? dayInfo.count + ' 次通话 · ' + C.durationText(dayInfo.minutes) : '这天还没有通话') + '</p>' +
+        '</div>' +
+        (dayCalls.length ? '<button class="btn sm ghost" data-action="new-call" data-date="' + state.selected + '">＋ 补记</button>' : '') +
+      '</div>' +
+      (dayCalls.length
+        ? list
+        : '<div class="empty compact">' +
+            '<div class="empty-ic">' + svg('phone') + '</div>' +
+            '<p>点一下，记下这天的通话</p>' +
+            '<button class="btn primary sm" data-action="new-call" data-date="' + state.selected + '">＋ 记录一次通话</button>' +
+          '</div>') +
+    '</section>';
+  }
+
+  /* ---------------- 记录页 ---------------- */
+
+  function filteredCalls() {
+    var q = state.query.trim().toLowerCase();
+    return state.data.calls.filter(function (call) {
+      if (state.filter !== 'all' && call.contactId !== state.filter) return false;
+      if (!q) return true;
+      var p = contactById(call.contactId);
+      var hay = [p && p.name, p && p.relation, call.note, call.date, C.formatDayCN(call.date)].join(' ').toLowerCase();
+      return hay.indexOf(q) >= 0;
+    }).sort(C.compareCallsDesc);
+  }
+
+  function recordsView() {
+    var overall = summaryFor(C.monthKeyOf(C.todayKey()));
+    var chips = '<button class="chip' + (state.filter === 'all' ? ' is-on' : '') + '" data-action="filter-contact" data-id="all">全部</button>' +
+      state.data.contacts.map(function (p) {
+        return '<button class="chip' + (state.filter === p.id ? ' is-on' : '') + '" data-action="filter-contact" data-id="' + esc(p.id) + '">' +
+          '<i style="--c:' + p.color + '"></i>' + esc(p.name) + '</button>';
+      }).join('');
+
+    return '<header class="page-head">' +
+        '<div><h1>通话记录</h1><p>' +
+          (overall.overall.calls ? '共 ' + overall.overall.calls + ' 次 · ' + C.durationText(overall.overall.minutes) : '还没有通话记录') +
+        '</p></div>' +
+        '<button class="btn sm primary" data-action="new-call">＋ 记一笔</button>' +
+      '</header>' +
+      '<div class="search">' + svg('search') +
+        '<input id="search-input" type="search" placeholder="搜索家人或备注" value="' + esc(state.query) + '" autocomplete="off">' +
+      '</div>' +
+      '<div class="chips">' + chips + '</div>' +
+      '<div id="records-results">' + recordsResults() + '</div>';
+  }
+
+  function recordsResults() {
+    var list = filteredCalls();
+    var hasContacts = state.data.contacts.length > 0;
+
+    if (!list.length) {
+      var filtering = state.filter !== 'all' || state.query.trim();
+      return '<div class="card empty" style="margin-top:4px">' +
+        '<div class="empty-ic">' + svg(filtering ? 'search' : 'phone') + '</div>' +
+        '<h3>' + (filtering ? '没有找到相关记录' : '还没有通话记录') + '</h3>' +
+        '<p>' + (filtering ? '换个关键词，或看看全部记录' : hasContacts ? '记下第一次通话，日历就会亮起来' : '先添加家人，再开始记录') + '</p>' +
+        (filtering
+          ? '<button class="btn ghost" data-action="reset-filters">清除筛选</button>'
+          : hasContacts
+            ? '<button class="btn primary" data-action="new-call">＋ 记一笔</button>'
+            : '<button class="btn primary" data-action="new-contact">＋ 添加家人</button>') +
+      '</div>';
+    }
+
+    var groups = [];
+    list.forEach(function (call) {
+      var ym = C.monthKeyOf(call.date);
+      var g = groups[groups.length - 1];
+      if (!g || g.ym !== ym) {
+        g = { ym: ym, calls: [], minutes: 0 };
+        groups.push(g);
+      }
+      g.calls.push(call);
+      g.minutes += call.duration;
+    });
+
+    return groups.map(function (g) {
+      var days = [];
+      g.calls.forEach(function (call) {
+        var d = days[days.length - 1];
+        if (!d || d.key !== call.date) {
+          d = { key: call.date, calls: [] };
+          days.push(d);
+        }
+        d.calls.push(call);
+      });
+
+      return '<section class="month-block">' +
+        '<div class="month-head"><h2>' + C.monthLabel(g.ym) + '</h2>' +
+          '<span>' + g.calls.length + ' 次 · ' + C.durationText(g.minutes) + '</span></div>' +
+        days.map(function (d) {
+          var date = C.parseDateKey(d.key);
+          var weekday = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()];
+          return '<div class="day-row">' +
+            '<div class="day-rail"><strong>' + date.getDate() + '</strong><span>' + weekday + '</span></div>' +
+            '<div class="day-items">' + d.calls.map(recordCard).join('') + '</div>' +
+          '</div>';
+        }).join('') +
+      '</section>';
+    }).join('');
+  }
+
+  function recordCard(call) {
+    var p = contactById(call.contactId);
+    if (!p) return '';
+    var dir = call.direction === 'in' ? 'arrow-in' : 'arrow-out';
+    return '<button class="record-card" data-action="open-call" data-id="' + esc(call.id) + '">' +
+      '<span class="avatar" style="--c:' + p.color + '">' + esc(avatarText(p.name)) + '</span>' +
+      '<span class="record-main">' +
+        '<span class="record-title">' + esc(p.name) + '<span class="tag">' + esc(p.relation) + '</span></span>' +
+        '<span class="record-sub">' + esc(call.time) + ' · ' + svg(dir) + esc(C.directionLabel(call.direction)) + '</span>' +
+        (call.note ? '<span class="record-note">' + esc(call.note) + '</span>' : '') +
+      '</span>' +
+      '<span class="record-dur' + (call.duration === 0 ? ' zero' : '') + '">' + C.durationText(call.duration) + '</span>' +
+    '</button>';
+  }
+
+  /* ---------------- 统计页 ---------------- */
+
+  function statsView() {
+    var currentMonth = C.monthKeyOf(C.todayKey());
+    var s = summaryFor(state.statsMonth);
+    var isCurrent = state.statsMonth === currentMonth;
+    var max = Math.max.apply(null, s.trend.map(function (t) { return t.calls; }).concat([1]));
+    var trendTotal = s.trend.reduce(function (sum, t) { return sum + t.calls; }, 0);
+
+    var trend = s.trend.map(function (t) {
+      var h = t.calls ? Math.max(7, Math.round(t.calls / max * 100)) : 0;
+      return '<div class="trend-col' + (t.monthKey === currentMonth ? ' is-current' : '') + '" title="' + t.label + ' ' + t.calls + ' 次">' +
+        '<span class="trend-val">' + t.calls + '</span>' +
+        '<div class="trend-bar" style="--h:' + h + '%"></div>' +
+        '<span class="trend-label">' + t.label + '</span>' +
+      '</div>';
+    }).join('');
+
+    var peopleMax = Math.max.apply(null, s.people.map(function (p) { return p.monthCalls; }).concat([1]));
+    var ranks = s.people.map(function (p) {
+      var width = p.monthCalls ? Math.max(4, Math.round(p.monthCalls / peopleMax * 100)) : 0;
+      return '<div class="rank">' +
+        '<div class="rank-top"><span class="avatar sm" style="--c:' + p.color + '">' + esc(avatarText(p.name)) + '</span>' +
+          '<strong>' + esc(p.name) + '<span class="tag">' + esc(p.relation) + '</span></strong>' +
+          '<span class="rank-val">' + p.monthCalls + ' 次</span></div>' +
+        '<div class="rank-bar"><i style="width:' + width + '%;--c:' + p.color + '"></i></div>' +
+        '<div class="rank-meta">共 ' + p.totalCalls + ' 次 · ' + C.durationText(p.totalMinutes) +
+          ' · 最近：' + C.relativeDays(p.daysSince) + '</div>' +
+      '</div>';
+    }).join('');
+
+    return '<header class="page-head"><div><h1>通话统计</h1><p>看看最近的联络节奏</p></div></header>' +
+      '<div class="card month-switch">' +
+        '<button class="cal-nav" data-action="stats-prev" aria-label="上个月">' + svg('chevron-left') + '</button>' +
+        '<div><strong>' + C.monthLabel(state.statsMonth) + '</strong><small>' + (isCurrent ? '本月' : '历史月份') + '</small></div>' +
+        '<button class="cal-nav" data-action="stats-next" aria-label="下个月"' + (state.statsMonth >= currentMonth ? ' disabled' : '') + '>' + svg('chevron-right') + '</button>' +
+      '</div>' +
+      '<div class="tiles">' +
+        '<div class="tile"><strong>' + s.totals.calls + '</strong><span>通话次数</span></div>' +
+        '<div class="tile"><strong>' + s.totals.minutes + '</strong><span>通话分钟</span></div>' +
+        '<div class="tile"><strong>' + s.totals.contacts + '</strong><span>联系家人</span></div>' +
+      '</div>' +
+      '<section class="card stats-card">' +
+        '<div class="card-head"><h2>近 6 个月</h2><span>共 ' + trendTotal + ' 次</span></div>' +
+        '<div class="trend">' + trend + '</div>' +
+      '</section>' +
+      '<section class="card stats-card">' +
+        '<div class="card-head"><h2>家人排行</h2><span>按' + (isCurrent ? '本月' : '该月') + '次数</span></div>' +
+        (s.people.length ? '<div class="rank-list">' + ranks + '</div>' :
+          '<div class="empty" style="padding:18px 8px 12px"><div class="empty-ic">' + svg('users') + '</div>' +
+            '<p>添加家人后，这里会显示每个人的通话情况</p>' +
+            '<button class="btn primary sm" data-action="new-contact">＋ 添加家人</button></div>') +
+      '</section>' +
+      '<p class="footer-note">数据只保存在这台手机上</p>';
+  }
+
+  /* ---------------- 家人页 ---------------- */
+
+  function familyView() {
+    var s = summaryFor(C.monthKeyOf(C.todayKey()));
+    var threshold = state.data.settings.reminderDays;
+    var reminderOptions = C.REMINDER_OPTIONS.map(function (d) {
+      return '<option value="' + d + '"' + (d === threshold ? ' selected' : '') + '>' + (d === 0 ? '不提醒' : d + ' 天') + '</option>';
+    }).join('');
+
+    var people = s.people.map(function (p) {
+      var cold = threshold > 0 && p.daysSince !== null && p.daysSince >= threshold;
+      var tel = (p.phone || '').replace(/[^0-9+]/g, '');
+      return '<article class="card person-card">' +
+        '<div class="person-top">' +
+          '<span class="avatar lg" style="--c:' + p.color + '">' + esc(avatarText(p.name)) + '</span>' +
+          '<div class="person-id"><h3>' + esc(p.name) + '<span class="tag">' + esc(p.relation) + '</span></h3>' +
+            '<p>共 ' + p.totalCalls + ' 次 · ' + C.durationText(p.totalMinutes) + '</p></div>' +
+          '<span class="person-last' + (cold ? ' is-cold' : '') + '">' + esc(C.relativeDays(p.daysSince)) + '</span>' +
+        '</div>' +
+        '<p class="person-note">' + (p.lastKey
+          ? '最近一次：' + C.formatDayCN(p.lastKey) + ' ' + esc(p.lastTime || '') + ' · ' + C.durationText(p.lastDuration || 0)
+          : '还没有通话记录，记下第一次吧') + '</p>' +
+        '<div class="person-actions">' +
+          '<button class="btn sm primary" data-action="new-call" data-contact="' + esc(p.id) + '">记录通话</button>' +
+          (tel ? '<a class="btn sm ghost" href="tel:' + esc(tel) + '">拨打' + svg('phone') + '</a>' : '') +
+          '<button class="btn sm ghost" data-action="edit-contact" data-id="' + esc(p.id) + '">编辑</button>' +
+        '</div>' +
+      '</article>';
+    }).join('');
+
+    return '<header class="page-head">' +
+        '<div><h1>我的家人</h1><p>' + s.people.length + ' 位家人 · 共 ' + s.overall.calls + ' 次通话</p></div>' +
+        '<button class="btn sm primary" data-action="new-contact">＋ 添加</button>' +
+      '</header>' +
+      (s.people.length ? '<div class="people">' + people + '</div>' :
+        '<section class="card empty" style="margin-bottom:16px">' +
+          '<div class="empty-ic">' + svg('users') + '</div>' +
+          '<h3>还没有添加家人</h3>' +
+          '<p>把孙子、侄子的称呼加进来，就能记录每次通话</p>' +
+          '<button class="btn primary" data-action="new-contact">＋ 添加第一位家人</button>' +
+        '</section>') +
+      '<section class="card settings">' +
+        '<h2 class="card-title">提醒与备份</h2>' +
+        '<label class="setting-row"><span><strong>久未联系提醒</strong><small>超过设定天数，在日历页轻轻提醒</small></span>' +
+          '<select data-change="reminder-days" aria-label="久未联系提醒天数">' + reminderOptions + '</select></label>' +
+        '<button class="setting-row" data-action="export"><span><strong>导出备份</strong><small>保存成文件，换手机也能带走</small></span><span class="chev">' + svg('download') + '</span></button>' +
+        '<button class="setting-row" data-action="import"><span><strong>导入备份</strong><small>从之前导出的文件恢复记录</small></span><span class="chev">' + svg('upload') + '</span></button>' +
+        '<button class="setting-row" data-action="clear-data"><span><strong>清空所有数据</strong><small>家人和记录都会删除，无法恢复</small></span><span class="chev">' + svg('trash') + '</span></button>' +
+      '</section>' +
+      '<section class="card about">' +
+        '<div class="about-brand">微录 <span>v1.0</span></div>' +
+        '<p>' + (nativeAndroid
+          ? '数据只保存在这台手机里，不需要注册，也不会上传。建议隔一段时间导出一份备份。'
+          : '数据只保存在这台手机的浏览器里，不需要注册，也不会上传。建议隔一段时间导出一份备份。') + '</p>' +
+        (nativeAndroid
+          ? '<p class="about-tip" style="margin-top:0">已安装为手机 App，断网也能记录；数据保存在这台手机里。</p>'
+          : '<button class="btn ghost block" data-action="install">' + svg('install') + ' 添加到手机桌面</button>' +
+            (!isSingleFile ? '<a class="btn ghost block" style="margin-top:8px" href="./微录-单文件版.html" download="微录.html">' +
+              svg('download') + ' 下载单文件版</a>' +
+              '<p class="about-tip">下载后是单个 HTML 文件，发到手机用浏览器打开就能记，不需要服务器。</p>' : '')) +
+        '<button class="btn block" style="margin-top:8px;color:var(--muted);font-size:12.5px" data-action="load-demo">载入示例数据看看</button>' +
+      '</section>' +
+      '<p class="footer-note">每一次问候，都值得记下</p>';
+  }
+
+  /* ---------------- 弹层 ---------------- */
+
+  function hideToast() {
+    if (!toastEl) return;
+    toastEl.classList.remove('is-on');
+    clearTimeout(toastTimer);
+  }
+
+  function openSheet(inner) {
+    hideToast();
+    state.lastTrigger = document.activeElement;
+    sheetRoot.innerHTML = '<div class="sheet-backdrop" data-action="close-sheet"></div>' +
+      '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" tabindex="-1">' + inner + '</div>';
+    document.body.classList.add('sheet-open');
+    setTimeout(function () {
+      var sheet = sheetRoot.querySelector('.sheet');
+      if (sheet) sheet.focus({ preventScroll: true });
+    }, 60);
+  }
+
+  function closeSheet() {
+    sheetRoot.innerHTML = '';
+    document.body.classList.remove('sheet-open');
+    state.pendingConfirm = null;
+    state.contactAfterSave = null;
+    if (state.lastTrigger && typeof state.lastTrigger.focus === 'function') {
+      try { state.lastTrigger.focus({ preventScroll: true }); } catch (e) { /* 忽略 */ }
+    }
+    state.lastTrigger = null;
+  }
+
+  function sheetHead(title) {
+    return '<div class="sheet-grab"></div>' +
+      '<div class="sheet-head"><h2 id="sheet-title">' + esc(title) + '</h2>' +
+      '<button type="button" class="icon-btn" data-action="close-sheet" aria-label="关闭">' + svg('x') + '</button></div>';
+  }
+
+  function confirmSheet(opts) {
+    state.pendingConfirm = opts.onConfirm || null;
+    openSheet(sheetHead(opts.title) +
+      '<div class="sheet-body"><p class="confirm-text">' + opts.message + '</p>' +
+        '<div class="sheet-actions two-even">' +
+          '<button type="button" class="btn ghost" data-action="close-sheet">取消</button>' +
+          '<button type="button" class="btn ' + (opts.danger ? 'danger' : 'primary') + '" data-action="confirm-yes">' + esc(opts.confirmText || '确定') + '</button>' +
+        '</div>' +
+      '</div>');
+  }
+
+  function startNewCall(opts) {
+    opts = opts || {};
+    if (!state.data.contacts.length) {
+      toast('先添加一位家人');
+      openContactSheet(null, function (p) {
+        openCallSheet(null, { contactId: p.id, date: opts.date });
+      });
+      return;
+    }
+    openCallSheet(null, opts);
+  }
+
+  function openCallSheet(call, opts) {
+    opts = opts || {};
+    var isEdit = !!call;
+    var contacts = state.data.contacts;
+    if (!contacts.length) {
+      startNewCall({ date: opts.date });
+      return;
+    }
+    var defaultContact = opts.contactId || (state.filter !== 'all' ? state.filter : contacts[0].id);
+    if (!contactById(defaultContact)) defaultContact = contacts[0].id;
+    var draft = call ? {
+      id: call.id,
+      contactId: call.contactId,
+      date: call.date,
+      time: call.time,
+      duration: call.duration,
+      direction: call.direction,
+      note: call.note || ''
+    } : {
+      id: '',
+      contactId: defaultContact,
+      date: opts.date || state.selected || C.todayKey(),
+      time: nowTime(),
+      duration: 15,
+      direction: 'out',
+      note: ''
+    };
+    if (!C.isValidDateKey(draft.date)) draft.date = C.todayKey();
+
+    var picker = contacts.map(function (p) {
+      return '<button type="button" class="contact-pick' + (p.id === draft.contactId ? ' is-on' : '') + '" data-action="pick-contact" data-id="' + esc(p.id) + '">' +
+        '<span class="avatar" style="--c:' + p.color + '">' + esc(avatarText(p.name)) + '</span>' +
+        '<span>' + esc(p.name) + '</span></button>';
+    }).join('');
+
+    var quick = [5, 10, 15, 20, 30, 60].map(function (m) {
+      return '<button type="button" class="quick-dur" data-action="dur-set" data-value="' + m + '">' + m + ' 分钟</button>';
+    }).join('');
+
+    var form = '<form id="call-form" class="sheet-body" data-id="' + esc(draft.id) + '" novalidate>' +
+      '<div class="field"><span class="field-label">和谁通话</span>' +
+        '<div class="contact-picker">' + picker + '</div>' +
+        '<input type="hidden" name="contactId" value="' + esc(draft.contactId) + '">' +
+      '</div>' +
+      '<div class="row2">' +
+        '<div class="field"><label for="call-date">日期</label><input id="call-date" type="date" name="date" value="' + esc(draft.date) + '" required></div>' +
+        '<div class="field"><label for="call-time">时间</label><input id="call-time" type="time" name="time" value="' + esc(draft.time) + '" required></div>' +
+      '</div>' +
+      '<div class="field">' +
+        '<span class="field-label">通话时长 <span class="hint">没接通可记 0 分钟</span></span>' +
+        '<div class="duration-row">' +
+          '<button type="button" class="dur-btn" data-action="dur-step" data-step="-5" aria-label="减少 5 分钟">−</button>' +
+          '<div class="duration-box">' +
+            '<input id="duration-input" type="number" name="duration" min="0" max="1440" step="1" inputmode="numeric" value="' + draft.duration + '" aria-label="通话时长（分钟）">' +
+            '<span class="duration-unit">分钟</span>' +
+          '</div>' +
+          '<button type="button" class="dur-btn" data-action="dur-step" data-step="5" aria-label="增加 5 分钟">＋</button>' +
+        '</div>' +
+        '<div class="quick-durs">' + quick + '</div>' +
+        '<p class="dur-hint" id="dur-hint">约 ' + C.durationText(draft.duration) + '</p>' +
+      '</div>' +
+      '<div class="field"><span class="field-label">谁打给谁</span>' +
+        '<div class="seg">' +
+          '<label><input type="radio" name="direction" value="out"' + (draft.direction !== 'in' ? ' checked' : '') + '><span>我打过去</span></label>' +
+          '<label><input type="radio" name="direction" value="in"' + (draft.direction === 'in' ? ' checked' : '') + '><span>打给我</span></label>' +
+        '</div>' +
+      '</div>' +
+      '<div class="field"><label for="call-note">备注 <span class="hint">可不填</span></label>' +
+        '<input id="call-note" type="text" name="note" maxlength="60" value="' + esc(draft.note) + '" placeholder="聊了些什么…"></div>' +
+      '<p class="form-error" hidden role="alert"></p>' +
+      '<div class="sheet-actions"><button type="button" class="btn ghost" data-action="close-sheet">取消</button>' +
+        '<button type="submit" class="btn primary">' + (isEdit ? '保存修改' : '保存记录') + '</button></div>' +
+      (isEdit ? '<button type="button" class="delete-link" data-action="delete-call" data-id="' + esc(draft.id) + '">删除这条记录</button>' : '') +
+    '</form>';
+
+    openSheet(sheetHead(isEdit ? '编辑通话' : '记录这次通话') + form);
+    updateDurationHint();
+  }
+
+  function openContactSheet(contact, afterSave) {
+    var isEdit = !!contact;
+    var colors = C.COLORS.map(function (color, i) {
+      var checked = contact ? contact.color === color : i === 0;
+      return '<label class="color-dot" style="--c:' + color + '" title="颜色 ' + (i + 1) + '">' +
+        '<input type="radio" name="color" value="' + color + '"' + (checked ? ' checked' : '') + '></label>';
+    }).join('');
+
+    var relations = C.RELATIONS.map(function (r) {
+      return '<option value="' + r + '"' + (contact && contact.relation === r ? ' selected' : '') + '>' + r + '</option>';
+    }).join('');
+
+    var form = '<form id="contact-form" class="sheet-body" data-id="' + esc(contact ? contact.id : '') + '" novalidate>' +
+      '<div class="field"><label for="contact-name">称呼</label>' +
+        '<input id="contact-name" type="text" name="name" maxlength="12" value="' + esc(contact ? contact.name : '') + '" placeholder="例如：小宝" required></div>' +
+      '<div class="field"><label for="contact-relation">关系</label>' +
+        '<select id="contact-relation" name="relation">' + relations + '</select></div>' +
+      '<div class="field"><label for="contact-phone">电话 <span class="hint">可不填，方便直接拨打</span></label>' +
+        '<input id="contact-phone" type="tel" name="phone" maxlength="20" value="' + esc(contact && contact.phone ? contact.phone : '') + '" placeholder="手机或座机号码"></div>' +
+      '<div class="field"><span class="field-label">标记颜色</span><div class="color-row">' + colors + '</div></div>' +
+      '<p class="form-error" hidden role="alert"></p>' +
+      '<div class="sheet-actions"><button type="button" class="btn ghost" data-action="close-sheet">取消</button>' +
+        '<button type="submit" class="btn primary">' + (isEdit ? '保存修改' : '添加家人') + '</button></div>' +
+      (isEdit ? '<button type="button" class="delete-link" data-action="delete-contact" data-id="' + esc(contact.id) + '">删除这位家人</button>' : '') +
+    '</form>';
+
+    state.contactAfterSave = typeof afterSave === 'function' ? afterSave : null;
+    openSheet(sheetHead(isEdit ? '编辑家人' : '添加家人') + form);
+  }
+
+  function openInstallSheet() {
+    openSheet(sheetHead('添加到手机桌面') +
+      '<div class="sheet-body">' +
+        '<p class="confirm-text">把「微录」放到桌面，下次一点就开，像普通 App 一样。</p>' +
+        '<ul class="install-list">' +
+          '<li><strong>安卓 / Chrome：</strong>右上角菜单 →「添加到主屏幕」或「安装应用」</li>' +
+          '<li><strong>iPhone / Safari：</strong>底部「分享」→「添加到主屏幕」</li>' +
+          '<li><strong>在微信里打开：</strong>点右上角「…」→「在浏览器打开」后再添加</li>' +
+        '</ul>' +
+        '<p class="install-tip">用手机浏览器打开本页即可添加。数据保存在这台手机里，不会上传。</p>' +
+        '<div class="sheet-actions one"><button type="button" class="btn primary" data-action="close-sheet">知道了</button></div>' +
+      '</div>');
+  }
+
+  /* ---------------- 表单保存 ---------------- */
+
+  function showFormError(form, errors) {
+    var box = form.querySelector('.form-error');
+    if (!box) return;
+    var keys = Object.keys(errors);
+    box.textContent = keys.length ? errors[keys[0]] : '请检查填写内容';
+    box.hidden = false;
+    var fieldMap = { name: 'name', phone: 'phone', date: 'date', time: 'time', duration: 'duration' };
+    keys.forEach(function (k) {
+      var field = fieldMap[k];
+      if (!field) return;
+      var input = form.querySelector('[name="' + field + '"]');
+      if (input) input.classList.add('invalid');
+    });
+  }
+
+  function clearFormError(form) {
+    var box = form.querySelector('.form-error');
+    if (box) { box.hidden = true; box.textContent = ''; }
+    var invalids = form.querySelectorAll('.invalid');
+    for (var i = 0; i < invalids.length; i++) invalids[i].classList.remove('invalid');
+  }
+
+  function saveCallForm(form) {
+    var fd = new FormData(form);
+    var id = form.getAttribute('data-id') || '';
+    var result = C.validateCall({
+      contactId: fd.get('contactId'),
+      date: fd.get('date'),
+      time: fd.get('time'),
+      duration: fd.get('duration'),
+      direction: fd.get('direction'),
+      note: fd.get('note')
+    }, state.data.contacts);
+    if (!result.ok) {
+      showFormError(form, result.errors);
+      return;
+    }
+    var now = new Date().toISOString();
+    if (id) {
+      for (var i = 0; i < state.data.calls.length; i++) {
+        if (state.data.calls[i].id === id) {
+          state.data.calls[i] = Object.assign({}, state.data.calls[i], result.value, { updatedAt: now });
+          break;
+        }
+      }
+    } else {
+      state.data.calls.push(Object.assign({ id: C.uid('c'), createdAt: now }, result.value));
+    }
+    state.data.calls.sort(C.compareCallsDesc);
+    saveData();
+
+    var savedDate = result.value.date;
+    var date = C.parseDateKey(savedDate);
+    state.selected = savedDate;
+    state.calYear = date.getFullYear();
+    state.calMonth = date.getMonth();
+
+    closeSheet();
+    renderAll();
+    toast(id ? '已更新这次通话' : '已记下，愿常联系');
+  }
+
+  function saveContactForm(form) {
+    var fd = new FormData(form);
+    var id = form.getAttribute('data-id') || '';
+    var result = C.validateContact({
+      name: fd.get('name'),
+      relation: fd.get('relation'),
+      phone: fd.get('phone'),
+      color: fd.get('color')
+    });
+    if (!result.ok) {
+      showFormError(form, result.errors);
+      return;
+    }
+    var now = new Date().toISOString();
+    var saved = null;
+    if (id) {
+      for (var i = 0; i < state.data.contacts.length; i++) {
+        if (state.data.contacts[i].id === id) {
+          state.data.contacts[i] = Object.assign({}, state.data.contacts[i], result.value, { updatedAt: now });
+          saved = state.data.contacts[i];
+          break;
+        }
+      }
+    } else {
+      saved = Object.assign({ id: C.uid('p'), createdAt: now }, result.value);
+      state.data.contacts.push(saved);
+    }
+    saveData();
+    var cb = state.contactAfterSave;
+    closeSheet();
+    renderAll();
+    if (saved) toast(id ? '已更新家人信息' : '已添加 ' + saved.name);
+    if (cb && saved) cb(saved);
+  }
+
+  function removeCall(id) {
+    state.data.calls = state.data.calls.filter(function (c) { return c.id !== id; });
+    saveData();
+    renderAll();
+    toast('记录已删除');
+  }
+
+  function removeContact(id) {
+    var p = contactById(id);
+    state.data.contacts = state.data.contacts.filter(function (c) { return c.id !== id; });
+    state.data.calls = state.data.calls.filter(function (c) { return c.contactId !== id; });
+    if (state.filter === id) state.filter = 'all';
+    saveData();
+    renderAll();
+    toast(p ? '已删除 ' + p.name + ' 及相关记录' : '已删除');
+  }
+
+  /* ---------------- 备份 / 清空 ---------------- */
+
+  function exportData() {
+    try {
+      var payload = {
+        app: 'weilu',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        data: state.data
+      };
+      if (nativeAndroid) {
+        var saved = window.WeiluAndroid.saveBackup(
+          '微录备份-' + C.todayKey() + '.json',
+          JSON.stringify(payload, null, 2)
+        );
+        if (saved && String(saved).indexOf('ERROR:') !== 0) {
+          toast('备份已保存：' + saved);
+        } else {
+          toast('保存备份失败，请重试');
+        }
+        return;
+      }
+      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = '微录备份-' + C.todayKey() + '.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+      toast('备份文件已导出');
+    } catch (e) {
+      toast('导出失败，请重试');
+    }
+  }
+
+  function handleImportFile(file) {
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var data;
+      try {
+        var parsed = JSON.parse(String(reader.result));
+        data = C.normalizeData(parsed && parsed.data ? parsed.data : parsed);
+      } catch (e) {
+        toast('文件格式不正确');
+        return;
+      }
+      if (!data.contacts.length && !data.calls.length) {
+        toast('没有找到可导入的记录');
+        return;
+      }
+      confirmSheet({
+        title: '导入备份？',
+        message: '将导入 <strong>' + data.contacts.length + '</strong> 位家人、<strong>' + data.calls.length +
+          '</strong> 条通话记录，并覆盖当前数据。',
+        confirmText: '导入',
+        onConfirm: function () {
+          state.data = data;
+          saveData();
+          state.filter = 'all';
+          state.query = '';
+          state.selected = C.todayKey();
+          var d = C.parseDateKey(state.selected);
+          state.calYear = d.getFullYear();
+          state.calMonth = d.getMonth();
+          state.statsMonth = C.monthKeyOf(state.selected);
+          renderAll();
+          toast('备份已恢复');
+        }
+      });
+    };
+    reader.onerror = function () { toast('读取文件失败'); };
+    reader.readAsText(file, 'utf-8');
+  }
+
+  /* ---------------- 安装 ---------------- */
+
+  var deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    updateInstallUi();
+  });
+
+  window.addEventListener('appinstalled', function () {
+    deferredPrompt = null;
+    updateInstallUi();
+    toast('已添加到桌面');
+  });
+
+  function isStandalone() {
+    return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+      window.navigator.standalone === true;
+  }
+
+  function updateInstallUi() {
+    var btn = document.getElementById('install-btn');
+    if (!btn) return;
+    var show = !isStandalone() && (!!deferredPrompt || /iPhone|iPad|iPod/i.test(navigator.userAgent));
+    btn.hidden = !show;
+  }
+
+  function installApp() {
+    if (isStandalone()) { toast('已经安装到桌面了'); return; }
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      var p = deferredPrompt.userChoice;
+      if (p && p.then) {
+        p.then(function () { deferredPrompt = null; updateInstallUi(); });
+      } else {
+        deferredPrompt = null;
+        updateInstallUi();
+      }
+      return;
+    }
+    openInstallSheet();
+  }
+
+  /* ---------------- 交互 ---------------- */
+
+  document.addEventListener('click', function (event) {
+    var el = event.target.closest('[data-action]');
+    if (!el) return;
+    var action = el.getAttribute('data-action');
+
+    switch (action) {
+      case 'tab':
+        setTab(el.getAttribute('data-tab'));
+        break;
+
+      case 'cal-prev':
+      case 'cal-next': {
+        var delta = action === 'cal-prev' ? -1 : 1;
+        var d = new Date(state.calYear, state.calMonth + delta, 1);
+        state.calYear = d.getFullYear();
+        state.calMonth = d.getMonth();
+        var ym = C.monthKeyOfDate(d);
+        state.selected = C.monthKeyOf(C.todayKey()) === ym ? C.todayKey() : ym + '-01';
+        renderView();
+        break;
+      }
+
+      case 'cal-today': {
+        var todayDate = C.parseDateKey(C.todayKey());
+        state.calYear = todayDate.getFullYear();
+        state.calMonth = todayDate.getMonth();
+        state.selected = C.todayKey();
+        renderView();
+        break;
+      }
+
+      case 'pick-day': {
+        var key = el.getAttribute('data-key');
+        state.selected = key;
+        var dk = C.parseDateKey(key);
+        if (dk.getFullYear() !== state.calYear || dk.getMonth() !== state.calMonth) {
+          state.calYear = dk.getFullYear();
+          state.calMonth = dk.getMonth();
+        }
+        renderView();
+        break;
+      }
+
+      case 'new-call': {
+        var date = el.getAttribute('data-date');
+        if (!date) date = state.tab === 'calendar' ? state.selected : C.todayKey();
+        startNewCall({ contactId: el.getAttribute('data-contact') || '', date: date });
+        break;
+      }
+
+      case 'open-call': {
+        var call = state.data.calls.filter(function (c) { return c.id === el.getAttribute('data-id'); })[0];
+        if (call) openCallSheet(call);
+        break;
+      }
+
+      case 'new-contact':
+        openContactSheet(null);
+        break;
+
+      case 'edit-contact': {
+        var person = contactById(el.getAttribute('data-id'));
+        if (person) openContactSheet(person);
+        break;
+      }
+
+      case 'pick-contact': {
+        var form = el.closest('form');
+        if (!form) return;
+        var hidden = form.querySelector('input[name="contactId"]');
+        if (hidden) hidden.value = el.getAttribute('data-id');
+        var picks = form.querySelectorAll('.contact-pick');
+        for (var i = 0; i < picks.length; i++) {
+          picks[i].classList.toggle('is-on', picks[i] === el);
+        }
+        break;
+      }
+
+      case 'dur-step':
+      case 'dur-set': {
+        var formEl = el.closest('form');
+        if (!formEl) return;
+        var input = formEl.querySelector('[name="duration"]');
+        if (!input) return;
+        var next = action === 'dur-step'
+          ? Number(input.value || 0) + Number(el.getAttribute('data-step') || 0)
+          : Number(el.getAttribute('data-value') || 0);
+        input.value = C.clampDuration(next);
+        updateDurationHint();
+        break;
+      }
+
+      case 'close-sheet':
+        closeSheet();
+        break;
+
+      case 'confirm-yes': {
+        var fn = state.pendingConfirm;
+        state.pendingConfirm = null;
+        closeSheet();
+        if (typeof fn === 'function') fn();
+        break;
+      }
+
+      case 'delete-call': {
+        var callId = el.getAttribute('data-id');
+        confirmSheet({
+          title: '删除这条记录？',
+          message: '删除后无法恢复。',
+          confirmText: '删除',
+          danger: true,
+          onConfirm: function () { removeCall(callId); }
+        });
+        break;
+      }
+
+      case 'delete-contact': {
+        var contactId = el.getAttribute('data-id');
+        var target = contactById(contactId);
+        if (!target) return;
+        confirmSheet({
+          title: '删除' + target.name + '？',
+          message: '这位家人的 <strong>' + state.data.calls.filter(function (c) { return c.contactId === contactId; }).length +
+            '</strong> 条通话记录也会一起删除，无法恢复。',
+          confirmText: '删除',
+          danger: true,
+          onConfirm: function () { removeContact(contactId); }
+        });
+        break;
+      }
+
+      case 'filter-contact':
+        state.filter = el.getAttribute('data-id') || 'all';
+        renderView();
+        break;
+
+      case 'reset-filters':
+        state.filter = 'all';
+        state.query = '';
+        renderView();
+        break;
+
+      case 'stats-prev':
+      case 'stats-next': {
+        var step = action === 'stats-prev' ? -1 : 1;
+        var targetMonth = C.shiftMonth(state.statsMonth, step);
+        if (targetMonth > C.monthKeyOf(C.todayKey())) return;
+        state.statsMonth = targetMonth;
+        renderView();
+        break;
+      }
+
+      case 'export':
+        exportData();
+        break;
+
+      case 'import':
+        if (importInput) importInput.click();
+        break;
+
+      case 'load-demo': {
+        var overwrite = state.data.contacts.length || state.data.calls.length;
+        var load = function () {
+          if (!window.WeiLuSeed) { toast('示例数据未加载'); return; }
+          state.data = C.normalizeData(window.WeiLuSeed.build(C.todayKey()));
+          state.filter = 'all';
+          state.query = '';
+          state.selected = C.todayKey();
+          var d = C.parseDateKey(state.selected);
+          state.calYear = d.getFullYear();
+          state.calMonth = d.getMonth();
+          state.statsMonth = C.monthKeyOf(state.selected);
+          saveData();
+          renderAll();
+          toast('示例数据已载入');
+        };
+        if (overwrite) {
+          confirmSheet({
+            title: '载入示例数据？',
+            message: '示例包含 4 位家人和一批通话记录，会<strong>覆盖当前数据</strong>。建议先导出备份。',
+            confirmText: '载入',
+            danger: true,
+            onConfirm: load
+          });
+        } else {
+          load();
+        }
+        break;
+      }
+
+      case 'clear-data': {
+        var hasData = state.data.contacts.length || state.data.calls.length;
+        if (!hasData) { toast('现在就是空的'); break; }
+        confirmSheet({
+          title: '清空所有数据？',
+          message: '所有家人和通话记录都会被删除，且<strong>无法恢复</strong>。建议先导出备份。',
+          confirmText: '确认清空',
+          danger: true,
+          onConfirm: function () {
+            state.data = C.makeEmptyData();
+            saveData();
+            state.filter = 'all';
+            state.query = '';
+            state.selected = C.todayKey();
+            var d = C.parseDateKey(state.selected);
+            state.calYear = d.getFullYear();
+            state.calMonth = d.getMonth();
+            state.statsMonth = C.monthKeyOf(state.selected);
+            renderAll();
+            toast('已清空');
+          }
+        });
+        break;
+      }
+
+      case 'install':
+        installApp();
+        break;
+    }
+  });
+
+  document.addEventListener('submit', function (event) {
+    if (event.target.id === 'call-form') {
+      event.preventDefault();
+      saveCallForm(event.target);
+    } else if (event.target.id === 'contact-form') {
+      event.preventDefault();
+      saveContactForm(event.target);
+    }
+  });
+
+  document.addEventListener('input', function (event) {
+    if (event.target.id === 'search-input') {
+      state.query = event.target.value;
+      var results = document.getElementById('records-results');
+      if (results) results.innerHTML = recordsResults();
+    } else if (event.target.id === 'duration-input') {
+      updateDurationHint();
+    }
+  });
+
+  function updateDurationHint() {
+    var input = document.getElementById('duration-input');
+    var hint = document.getElementById('dur-hint');
+    if (!input || !hint) return;
+    var value = C.clampDuration(input.value);
+    hint.textContent = value ? '约 ' + C.durationText(value) : '这次没接通也可以保存';
+  }
+
+  document.addEventListener('change', function (event) {
+    if (event.target.matches('[data-change="reminder-days"]')) {
+      var days = Number(event.target.value) || 0;
+      state.data.settings.reminderDays = days;
+      saveData();
+      renderView();
+      toast(days ? '超过 ' + days + ' 天没通话就会提醒' : '已关闭久未联系提醒');
+    }
+  });
+
+  if (importInput) {
+    importInput.addEventListener('change', function () {
+      var file = importInput.files && importInput.files[0];
+      importInput.value = '';
+      handleImportFile(file);
+    });
+  }
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && sheetRoot.innerHTML) closeSheet();
+  });
+
+  window.addEventListener('hashchange', function () {
+    var hash = (location.hash || '').replace(/^#/, '');
+    if (['calendar', 'records', 'stats', 'family'].indexOf(hash) >= 0 && hash !== state.tab) {
+      state.tab = hash;
+      renderChrome();
+      renderView();
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  });
+
+  /* 方便自动化检查 */
+  window.__WEILU__ = {
+    getData: function () { return JSON.parse(JSON.stringify(state.data)); },
+    getTab: function () { return state.tab; },
+    setTab: setTab,
+    toast: toast
+  };
+})();
+
+  </script>
+</body>
+</html>
